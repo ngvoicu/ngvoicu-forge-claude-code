@@ -1,0 +1,8 @@
+{
+  "name": "uispec",
+  "description": "Maintains UI specifications in a shared sibling directory. Backend skill syncs openapi.yaml, endpoint specs, and component patterns after API changes. Frontend skill reads specs to guide component development and API integration.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Gabriel Voicu"
+  }
+}

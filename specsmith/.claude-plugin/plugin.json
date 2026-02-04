@@ -1,0 +1,8 @@
+{
+  "name": "specsmith",
+  "description": "Create and manage thorough implementation specs with discovery interviews, deep research, and phased execution.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Gabriel Voicu"
+  }
+}
