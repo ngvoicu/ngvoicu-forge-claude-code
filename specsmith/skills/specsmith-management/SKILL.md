@@ -1,6 +1,6 @@
 ---
 name: specsmith-management
-description: "Awareness of the .specsmiths/ directory for multi-spec workflows. Triggers on: 'the plan', 'the spec', 'my plans', 'switch to', 'go back to', 'resume', 'continue where we left off', 'what was I working on', 'show my plans', 'where am I', 'actually let's change', 'we also need', 'I realized we should', or when a .specsmiths/ directory exists. Also triggers when the user describes a feature requiring changes to more than 2 files."
+description: "Awareness of the .specsmiths/ directory for multi-spec workflows. Triggers on: 'the plan', 'the spec', 'my plans', 'switch to', 'go back to', 'resume', 'continue where we left off', 'what was I working on', 'show my plans', 'where am I', 'actually let's change', 'we also need', 'I realized we should', 'implement the spec', 'let's build this', 'start implementation', 'execute the plan', or when a .specsmiths/ directory exists. Also triggers when the user describes a feature requiring changes to more than 2 files."
 ---
 
 # Plan Management Awareness
@@ -8,6 +8,14 @@ description: "Awareness of the .specsmiths/ directory for multi-spec workflows. 
 ## Trigger Phrases
 
 Activate this skill when the user says anything matching these patterns:
+
+**Implementation triggers:**
+- "implement the spec", "implement this", "let's implement"
+- "let's build this", "start building", "begin implementation"
+- "start implementation", "execute the plan", "execute the spec"
+- "let's code this", "start coding", "begin coding"
+- "make it happen", "build it", "do it"
+- When any of these are detected, invoke `/specsmith-implement`
 
 **Switch/Resume:**
 - "go back to [spec name]", "continue where we left off", "switch to [spec name]"
@@ -21,10 +29,10 @@ Activate this skill when the user says anything matching these patterns:
 **Mid-implementation edits:**
 - "actually let's change X", "we also need Y", "I realized we should..."
 - "wait, what about...", "can we add...", "I forgot about..."
-- These imply an implicit `/specsmith edit` — update the spec, don't just implement ad-hoc
+- These imply an implicit `/specsmith-edit` — update the spec, don't just implement ad-hoc
 
 **Complexity detection:**
-- When the user describes a feature that clearly requires changes to more than 2 files, or involves multiple components/layers (API + DB + UI, etc.), proactively suggest: "This is getting complex — want me to create a spec with `/specsmith new`?"
+- When the user describes a feature that clearly requires changes to more than 2 files, or involves multiple components/layers (API + DB + UI, etc.), proactively suggest: "This is getting complex — want me to create a spec with `/specsmith-new`?"
 
 ## Auto-Detection Behavior
 
@@ -45,7 +53,7 @@ Before ANY implementation work, check for `.specsmiths/active.json` in the proje
 
 ## Context Restoration
 
-When resuming a spec (via explicit `/specsmith resume` or conversational triggers):
+When resuming a spec (via explicit `/specsmith-resume` or conversational triggers):
 
 1. Always re-read ALL companion files:
    - `.specsmiths/<n>.md` — the spec itself
@@ -63,4 +71,4 @@ When the conversation suggests complexity but no spec exists:
 - Implementation is spanning multiple files without a clear plan
 - User seems uncertain about approach or order of operations
 
-Say: "This is getting complex — want me to create a spec to track this properly? `/specsmith new <suggested-name>`"
+Say: "This is getting complex — want me to create a spec to track this properly? `/specsmith-new <suggested-name>`"

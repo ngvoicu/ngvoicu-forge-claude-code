@@ -1,11 +1,11 @@
 ---
-description: "Manage implementation specs. Creates thorough, spec-grade implementation documents through discovery interviews, deep research, and edge case analysis. Usage: /specsmith <action> [name]. Actions: new, edit, show, list, switch, resume, status, archive, unarchive, drop."
-allowed-tools: Read, Edit, MultiEdit, Write, Bash, Glob, Grep, LS, TodoRead, TodoWrite, Task, WebSearch, WebFetch
+name: specsmith-implementation
+description: "Core implementation logic for specsmith commands. Do not invoke directly - use the /specsmith-* commands instead."
 ---
 
-# Spec Smith
+# Spec Smith Implementation
 
-Create and manage thorough implementation specs. These are NOT lightweight checklists — they are complete specification documents built through structured discovery, intensive research, and edge case analysis.
+This skill contains the core logic for all specsmith commands. It is invoked by the thin command wrappers.
 
 ## How It Works
 
@@ -20,22 +20,20 @@ A `.specsmiths/active.json` file tracks which spec is currently active.
 
 Before executing any action, check for and handle these edge cases:
 
-- **Spec name collisions**: Before creating a new spec with `/specsmith new`, check if `<n>.md` already exists in `.specsmiths/`. If it does, error: "A spec named `<n>` already exists. Use `/specsmith edit <n>` to revise it, or choose a different name."
-- **Missing .specsmiths directory**: On any command except `/specsmith new`, check that `.specsmiths/` exists. If not, explain: "No `.specsmiths/` directory found. Run `/specsmith new <name>` to create your first spec."
+- **Spec name collisions**: Before creating a new spec with `/specsmith-new`, check if `<n>.md` already exists in `.specsmiths/`. If it does, error: "A spec named `<n>` already exists. Use `/specsmith-edit <n>` to revise it, or choose a different name."
+- **Missing .specsmiths directory**: On any command except `/specsmith-new`, check that `.specsmiths/` exists. If not, explain: "No `.specsmiths/` directory found. Run `/specsmith-new <name>` to create your first spec."
 - **Corrupted active.json**: When reading `.specsmiths/active.json`, validate that it contains valid JSON and that the referenced spec file actually exists. If broken, offer to rebuild: scan `.specsmiths/*.md` files, list found specs, and ask the user which (if any) should be active. Rewrite `active.json` accordingly.
 - **Invalid spec names**: Validate that spec names contain only alphanumeric characters, hyphens, and underscores. If the user provides a name with spaces or special characters, auto-slugify it (e.g. "my cool feature" → "my-cool-feature") and confirm with the user before proceeding.
 - **Git merge conflicts**: When reading any spec file, check for `<<<<< HEAD` conflict markers. If found, error: "Spec `<n>` has unresolved git merge conflicts. Please resolve them before continuing." Do not attempt to parse or use the conflicted file.
 - **Network failures during research**: If WebSearch or WebFetch tools fail during Phase 2 research, note the failure in `.specsmiths/<n>.research.md` under a `## Research Gaps` section and continue with codebase analysis only. Do not block spec creation on web availability.
 
-## Actions
+---
 
-### `/specsmith new <n>`
+## Action: new
 
 Create a new implementation spec. This is a multi-phase process that prioritizes understanding the problem deeply before proposing any solution.
 
----
-
-#### Phase 1: Discovery Interview
+### Phase 1: Discovery Interview
 
 **Do NOT research or plan anything yet.** First, deeply understand what the user wants.
 
@@ -118,7 +116,7 @@ Only proceed to Phase 2 when:
 
 ---
 
-#### Phase 2: Deep Research (parallel subagents)
+### Phase 2: Deep Research (parallel subagents)
 
 Now that requirements are understood, spawn subagents to research how to build this. Adapt the number and focus of subagents based on what you learned in discovery.
 
@@ -212,7 +210,7 @@ For each decision point:
 
 ---
 
-#### Phase 3: Spec Creation
+### Phase 3: Spec Creation
 
 Using the discovery answers AND research findings, write the full specification to `.specsmiths/<n>.md`.
 
@@ -342,25 +340,66 @@ Do NOT set it as active until the user confirms.
 
 ---
 
-### `/specsmith list`
-Read `.specsmiths/active.json` and glob `.specsmiths/*.md` (exclude `.research.md` and `.questions.md`). Show each spec's name, status, current phase, and overall progress. Mark the active one with `→`. Show archived specs in a separate collapsed section at the bottom.
+## Action: list
 
-### `/specsmith switch <n>`
+Display all available specs with interactive picker using AskUserQuestion.
+
+1. Read `.specsmiths/active.json` and glob `.specsmiths/*.md` (exclude `.research.md` and `.questions.md`)
+2. For each spec, extract frontmatter to get status, current_phase, total_phases
+3. Use AskUserQuestion to let user pick which spec to work on:
+
+```
+Which spec would you like to work with?
+
+Options:
+- alpha (Phase 2/3, implementing) ← active
+- beta (Phase 1/2, paused)
+- gamma (draft)
+```
+
+4. After selection, offer follow-up actions:
+
+```
+What would you like to do with "<selected-spec>"?
+
+Options:
+- Show full spec
+- Edit spec
+- Switch to this spec (make it active)
+- Archive spec
+```
+
+Show archived specs in a separate "Archived" section at the bottom (collapsed by default).
+
+---
+
+## Action: switch
+
+Switch to a different spec.
+
 1. Save current progress on the active spec — check off completed steps, update `current_phase`
 2. Update `.specsmiths/active.json` to point to the new spec
 3. Read the new spec and display which phase and step it left off at
 4. Update TodoWrite task list with remaining steps from the current phase
 5. Do NOT start implementing — show status and wait
 
-### `/specsmith resume`
+---
+
+## Action: resume
+
+Resume the active spec.
+
 1. Read `.specsmiths/active.json` to find the active spec
 2. Read the spec file, its `.research.md`, and `.questions.md` for full context
 3. Find the current phase and the first unchecked step (`- [ ]`) within it
 4. Update TodoWrite task list with remaining steps in the current phase
 5. Show which phase and step you're resuming from with full details, and wait for go-ahead
 
-### `/specsmith status`
-Dashboard of all specs with phase-level detail:
+---
+
+## Action: status
+
+Show dashboard of all specs with phase-level detail:
 
 ```
 Spec Status
@@ -380,28 +419,39 @@ Archived:
   old-auth   Phase 3/3  ██████████  archived (2025-01-15)
 ```
 
-### `/specsmith archive <n>`
+---
+
+## Action: archive
 
 Move a completed or shelved spec to archived status without deleting:
+
 1. Set `status: archived` and `archived_date: <ISO date>` in the spec's frontmatter
 2. If archiving the active spec, set `"active": null` in `.specsmiths/active.json`
-3. `/specsmith list` and `/specsmith status` show archived specs in a separate section (collapsed by default)
-4. Archived specs can still be viewed with `/specsmith show <n>`
+3. `/specsmith-list` and `/specsmith-status` show archived specs in a separate section (collapsed by default)
+4. Archived specs can still be viewed with `/specsmith-show <n>`
 
-### `/specsmith unarchive <n>`
+---
+
+## Action: unarchive
 
 Restore an archived spec to its previous status:
+
 1. Remove `archived_date` from frontmatter
 2. Set `status` back to the appropriate value based on progress:
    - `draft` if `current_phase: 0`
    - `implementing` if partially complete
    - `complete` if all phases done
-3. Does NOT automatically make it the active spec — use `/specsmith switch <n>` for that
+3. Does NOT automatically make it the active spec — use `/specsmith-switch <n>` for that
 
-### `/specsmith drop <n>`
+---
+
+## Action: drop
+
 Remove a spec and all its companion files (.research.md, .questions.md). Confirm before deleting. If dropping the active spec, clear `.specsmiths/active.json`.
 
-### `/specsmith edit <n>`
+---
+
+## Action: edit
 
 Revise an existing spec. Specs are living documents — they evolve as you learn more during implementation, when requirements change, or when you realize something was missed.
 
@@ -446,13 +496,24 @@ Revise an existing spec. Specs are living documents — they evolve as you learn
 - If edits are so large they basically rewrite the spec, suggest creating a new spec instead and archiving the old one
 - Always show the user what changed before finishing
 
-### `/specsmith show <n>`
+---
+
+## Action: show
 
 Display a spec without activating it. Read `.specsmiths/<n>.md` and show the full contents. Useful for reviewing a spec before deciding to switch to it or edit it. If `<n>` is omitted, show the active spec.
 
-## Implementing
+---
 
-When the user says to proceed (after `/specsmith resume` or `/specsmith switch`):
+## Action: implement
+
+Start implementation of the active spec. This action bridges planning and execution.
+
+1. Read `.specsmiths/active.json` to find the active spec
+2. If no active spec, error: "No active spec. Use `/specsmith-switch <name>` to activate one first."
+3. Read the spec file, its `.research.md`, and `.questions.md` for full context
+4. Find the current phase and first unchecked step
+5. Create TodoWrite tasks for all remaining steps in the current phase
+6. Begin implementing the first unchecked step
 
 **Within a phase:**
 1. Re-read the step details, its edge case references, and **Verify** criteria
@@ -471,7 +532,9 @@ When the user says to proceed (after `/specsmith resume` or `/specsmith switch`)
 3. Update `current_phase` in frontmatter
 4. If this was the last phase, set `status: complete`
 
-The user can stop after any phase. They can `/specsmith switch` to work on something else and come back later. The phase structure ensures there's always a clean stopping point.
+The user can stop after any phase. They can `/specsmith-switch` to work on something else and come back later. The phase structure ensures there's always a clean stopping point.
+
+---
 
 ## State File: `.specsmiths/active.json`
 
@@ -488,11 +551,11 @@ If no spec is active, `"active"` is `null`. The current phase and step are track
 
 - **Discovery is mandatory** — never skip the interview. Ask until you truly understand the problem.
 - **Research is mandatory** — never skip subagents. The spec quality depends on what you find.
-- **Never auto-implement** — always wait for explicit go-ahead
+- **Never auto-implement** — always wait for explicit go-ahead (use `/specsmith-implement` to start)
 - **Save before switching** — always persist progress before changing context
 - **Re-read everything on resume** — spec + research + questions, restore full context
 - **Specs are the source of truth** — never rely on conversation memory
-- **Specs are living documents** — when the user says "actually let's change X" or "I realized we also need Y" during implementation, treat it as an implicit `/specsmith edit`. Update the spec file, don't just implement the change ad-hoc. The spec must always reflect reality.
+- **Specs are living documents** — when the user says "actually let's change X" or "I realized we also need Y" during implementation, treat it as an implicit `/specsmith-edit`. Update the spec file, don't just implement the change ad-hoc. The spec must always reflect reality.
 - **Commit `.specsmiths/` to git** — specs must survive across sessions
 - **No vague steps** — every step must be implementable without follow-up questions
 - **Every step has verification** — nothing is done until verified
