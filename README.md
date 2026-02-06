@@ -137,9 +137,44 @@ chisel    ──→ uispec       Update spec files when renaming endpoints
 
 ---
 
+## General CLAUDE.md Guidelines
+
+Paste these into any project's `CLAUDE.md` as a baseline. They work standalone or alongside the plugin snippets below.
+
+```markdown
+## Agent Guidelines
+
+### Read Before Acting
+- NEVER speculate about code you haven't read — always open and read files before answering questions or making claims
+- When the user references a file, read it first — give grounded, hallucination-free answers
+- Before modifying code, read the surrounding context to understand patterns and conventions
+
+### Plan Before Building
+- Think through the problem before writing code
+- For changes touching more than 2-3 files, check in with a plan before implementing
+- Explain your approach at a high level before diving into details
+
+### Keep It Simple
+- Make every change as small and focused as possible
+- Prefer editing existing files over creating new ones
+- Don't over-engineer — no extra abstractions, no speculative features, no unnecessary refactoring
+- If three lines of straightforward code work, don't create a helper function
+
+### Explain As You Go
+- Give a brief high-level explanation of each change you make
+- After completing a task, summarize what was changed and why
+
+### Verify Your Work
+- After making changes, check that nothing is broken
+- Run tests if they exist
+- If you introduced a bug, fix it before moving on
+```
+
+---
+
 ## CLAUDE.md Snippets
 
-Each plugin includes a ready-to-paste CLAUDE.md snippet for target projects. Add these to your project's `CLAUDE.md` to enforce plugin usage.
+Each plugin includes a ready-to-paste CLAUDE.md snippet for target projects. Add these to your project's `CLAUDE.md` (after the general guidelines above) to enforce plugin usage.
 
 **Snippet locations:**
 - Specsmith: managed via the specsmith-management awareness skill (auto-detects `.specsmiths/`)
