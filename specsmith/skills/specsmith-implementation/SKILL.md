@@ -37,7 +37,19 @@ Create a new implementation spec. This is a multi-phase process that prioritizes
 
 **Do NOT research or plan anything yet.** First, deeply understand what the user wants.
 
-Start by asking questions. Ask 3-5 focused questions per round. Keep going until there is enough clarity to spec this properly. Cover these dimensions:
+#### Step 1: Collect the Brief
+
+Before asking any questions, invite the user to describe what they want to build in their own words. Say something like:
+
+"Before I start asking questions, tell me everything you already know about this. What should it do? What's the context? Any constraints or ideas? Write as much or as little as you want — I'll ask follow-up questions after."
+
+Wait for the user's response. This is their **brief** — it may be a single sentence or multiple paragraphs. Accept whatever they provide without interrupting.
+
+Log the brief to `.specsmiths/<n>.questions.md` under a `## Brief` section at the top (before Round 1).
+
+#### Step 2: Targeted Interview
+
+Now ask follow-up questions **informed by the brief**. Don't re-ask things the user already covered — instead, dig deeper into gaps, ambiguities, and unstated assumptions from their description. Ask 3-5 focused questions per round. Keep going until there is enough clarity to spec this properly. Cover these dimensions:
 
 **Functional requirements:**
 - What exactly should this do? Walk me through the user/system flow.
@@ -78,11 +90,14 @@ Log everything to `.specsmiths/<n>.questions.md`:
 ```markdown
 # Discovery: <n>
 
+## Brief
+<user's initial description — pasted verbatim>
+
 ## Round 1
-**Q:** <question>
+**Q:** <follow-up question based on the brief>
 **A:** <user's answer>
 
-**Q:** <question>
+**Q:** <follow-up question based on the brief>
 **A:** <user's answer>
 
 ## Round 2
