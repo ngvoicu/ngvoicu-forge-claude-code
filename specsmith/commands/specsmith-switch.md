@@ -1,5 +1,6 @@
 ---
 description: "Switch to a different spec (make it active). Usage: /specsmith-switch <name>"
+scope: both
 allowed-tools: Read, Edit, Write, Glob, Grep, TodoWrite
 ---
 

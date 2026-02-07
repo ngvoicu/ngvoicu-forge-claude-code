@@ -1,6 +1,6 @@
 # ngvoicu-forge-claude-code
 
-Claude Code plugin marketplace with six plugins for spec-driven development, deep research, living documentation, surgical code editing, and UI specification workflows. All plugins are markdown-based — no build system, no dependencies.
+Claude Code plugin marketplace with four plugins for spec-driven development, deep research, living documentation, and surgical code editing. UI specification workflows are integrated into specsmith. All plugins are markdown-based — no build system, no dependencies.
 
 ## Quick Start
 
@@ -9,256 +9,11 @@ Claude Code plugin marketplace with six plugins for spec-driven development, dee
 /plugin marketplace add https://github.com/ngvoicu/ngvoicu-forge-claude-code.git
 
 # Install what you need
-/plugin install specsmith@ngvoicu-forge-claude-code
-/plugin install grimoire@ngvoicu-forge-claude-code
-/plugin install runebook@ngvoicu-forge-claude-code
-/plugin install chisel@ngvoicu-forge-claude-code
-/plugin install uispec-backend@ngvoicu-forge-claude-code
-/plugin install uispec-frontend@ngvoicu-forge-claude-code
+/plugin install specsmith@ngvoicu-forge-claude-code    # specs + UISpec integration
+/plugin install grimoire@ngvoicu-forge-claude-code     # research suite
+/plugin install runebook@ngvoicu-forge-claude-code     # living documentation
+/plugin install chisel@ngvoicu-forge-claude-code       # surgical code editor
 ```
-
----
-
-## The Complete Development Workflow
-
-All six plugins form a complete development pipeline — from planning a feature to shipping it with full documentation, tested code, and synced API contracts. Here's how they work together.
-
-### The Problem
-
-You're building a feature. Requirements live in someone's head. Nobody researches best practices before coding. The backend changes an endpoint, the frontend doesn't know. A file gets renamed, half the imports break. Documentation is stale or doesn't exist. By the time you notice, the bug is in production and nobody remembers why things were built this way.
-
-### The Solution
-
-Each plugin handles one piece of the development lifecycle:
-
-| Plugin | Role | What it produces |
-|--------|------|-----------------|
-| **specsmith** | Planning | Implementation specs with phased steps |
-| **grimoire** | Research | Library docs, best practices, codebase analysis |
-| **runebook** | Documentation | Living docs for every component + system guides |
-| **chisel** | Code editing | Safe renames, moves, and replacements |
-| **uispec-backend** | API contract | Synced `openapi.yaml` and endpoint specs |
-| **uispec-frontend** | UI implementation | Generated UI from specs with validation |
-
-### Step-by-Step: From Idea to Shipped Feature
-
-#### 1. Spec the feature (specsmith)
-
-```
-/specsmith-new auth-refactor: Refactor the auth middleware to support both JWT and session tokens
-```
-
-Specsmith runs a discovery interview, researches your codebase, and produces a full spec with phased implementation steps. The spec includes API design — endpoint paths, request/response shapes, error codes, auth requirements.
-
-Behind the scenes, if grimoire is installed, specsmith uses its specialized agents for research — library docs via Context7, best practices, codebase analysis, git history, DB schema, and external API contracts. All running in parallel.
-
-#### 2. Research before building (grimoire)
-
-Even outside specsmith, use grimoire whenever you're about to write code and you're not 100% sure of the approach. Just describe what you need — grimoire picks the right agents automatically:
-
-```bash
-# Grimoire auto-dispatches to the right agents based on your query:
-/grimoire add JWT refresh token rotation to the auth middleware
-/grimoire how does Stripe Connect handle marketplace payouts
-
-# Or use a specific stream for a quick focused lookup:
-/grimoire docs jsonwebtoken verify RS256 tokens
-```
-
-Grimoire feeds into specsmith Phase 2 automatically, but you can also use it standalone any time you need grounded research instead of guessing.
-
-#### 3. Check existing documentation (runebook)
-
-Before you start coding, runebook tells you how the system currently works:
-
-```bash
-# Read what's documented about the area you're changing:
-/runebook-show auth-service
-
-# Or read the full system guide for the domain:
-/runebook-show authentication
-```
-
-Runebook entries cover what each component does, its dependencies, edge cases, and recent changes. System guides give you the big-picture narrative — how authentication works end-to-end, not just individual endpoints.
-
-If runebook isn't set up yet, initialize it first:
-
-```
-/runebook-init
-```
-
-This scans your entire codebase and generates entries for every endpoint, service, job, flow, integration, page, component, and hook — plus narrative system guides for each feature domain.
-
-#### 4. Implement the backend (specsmith drives)
-
-```
-/specsmith-implement
-```
-
-Specsmith walks you through each step. As you implement:
-
-- **Runebook watches automatically** — after each code change, it updates the affected entries and guides without asking
-- **Specsmith reminds you to sync** — when a step creates or modifies an API endpoint:
-
-> "This step changed API endpoints. Run `/uispec-sync` to update the API contract."
-
-#### 5. Rename or restructure safely (chisel)
-
-If implementation requires renaming files, moving code, or replacing patterns across the codebase:
-
-```bash
-# Rename a module — updates all imports, tests, stories:
-/chisel rename AuthMiddleware to SessionAuthMiddleware
-
-# Move files to a new structure:
-/chisel move src/utils/jwt.ts to src/auth/jwt.ts
-
-# Replace a function name across the codebase:
-/chisel replace verifyToken with validateSession
-```
-
-Chisel preserves git history, finds co-located tests and barrel exports, and updates runebook entries referencing affected files — all automatically.
-
-#### 6. Sync the API contract to frontend (uispec-backend)
-
-```
-/uispec-sync
-```
-
-UISpec scans your backend, detects what changed, and updates the frontend project's `uispec/` directory:
-
-- `openapi.yaml` gets the new/modified endpoints
-- `endpoints/<name>.md` files are created or updated with request/response shapes, auth rules, error codes
-- Frontend-owned sections (UI guidelines, design system) are preserved — never overwritten
-
-#### 7. Build the frontend from the spec (uispec-frontend)
-
-```
-/uispec-implement create-user
-```
-
-The frontend plugin reads the endpoint spec, your design system tokens, and your component library docs, then generates the UI implementation — with proper loading states, error handling, validation, and accessibility. It follows your project's conventions (React, Vue, Angular, whatever it finds).
-
-#### 8. Validate everything
-
-```bash
-# Backend: are all endpoints documented? Any orphaned specs?
-/uispec-validate
-
-# Frontend: does the UI match the spec? Missing states? Wrong shapes?
-/uispec-validate-ui
-/uispec-detect
-
-# Documentation: is everything in sync? Anything stale?
-/runebook-validate
-```
-
-#### 9. Iterate
-
-When requirements change, go back to specsmith:
-
-```
-/specsmith-edit auth-refactor
-```
-
-Update the spec, implement the changes, run `/uispec-sync` again. Runebook updates automatically. The contract stays in sync. The documentation stays current. The frontend knows exactly what changed.
-
-### Updating Existing Endpoints
-
-The flow above covers new features. But most of the time you're changing something that already exists — adding a field, tweaking validation, changing a response shape. Here's the update flow:
-
-#### 1. Research first (grimoire)
-
-Before changing anything, understand the current state:
-
-```bash
-# Grimoire auto-picks the right agents:
-/grimoire how does user registration currently work and what are the edge cases
-```
-
-#### 2. Check the documentation (runebook)
-
-```bash
-# Read the entry for the endpoint you're changing:
-/runebook-show create-user
-
-# Read the domain guide for context:
-/runebook-show user-onboarding
-```
-
-#### 3. Make the backend change
-
-Modify the endpoint code as needed — add a field, change auth, update error handling. Runebook updates the affected entries automatically after your changes.
-
-#### 4. Sync the updated contract
-
-```
-/uispec-sync
-```
-
-UISpec detects what changed, updates the API sections in `endpoints/<name>.md`, and appends a changelog entry. Frontend-owned sections (UI guidelines, design tokens) are preserved.
-
-#### 5. See what's out of sync
-
-```
-/uispec-detect
-```
-
-Detection shows the gaps: shape mismatches (`response missing emailVerified field`), new error states not handled, undocumented API calls. This tells you exactly what the frontend needs to catch up on.
-
-#### 6. Implement with context
-
-```
-/uispec-implement create-user: Added email verification — show inline validation and a pending-verification state after submit
-```
-
-The colon syntax works like specsmith — endpoint name before the colon, context after it. The context tells uispec **why** things changed and **how** you want the UI to handle it. Without it, uispec implements the spec changes mechanically. With it, you guide the implementation decisions.
-
-Some examples:
-
-```
-/uispec-implement login: Session tokens replaced JWT — remove token refresh logic, add cookie-based auth
-/uispec-implement get-products: Added pagination — use infinite scroll, not page numbers
-/uispec-implement create-order: New discount_code field — show collapsible promo section, validate format client-side
-```
-
-You can also run without context if the spec changes are self-explanatory:
-
-```
-/uispec-implement create-user
-```
-
-#### 7. Validate
-
-```bash
-/uispec-validate-ui   # UI matches updated spec
-/runebook-validate     # documentation is current
-```
-
-### What Each Plugin Owns
-
-| | Backend-owned | Frontend-owned |
-|---|---|---|
-| **API contract** | `openapi.yaml`, Method/Path/Auth/Request/Response sections | Read-only |
-| **Suggested implementation** | Backend generates (component suggestions, interactions, watchouts) | Can override in UI Guidelines |
-| **UI guidelines** | Read-only | `design-system.md`, `components.md`, UI Guidelines sections |
-| **Implementation spec** | `.specsmiths/` — full spec with phased steps | Can read, doesn't modify |
-| **Documentation** | `.runebook/` — entries + guides (shared, both sides update) | `.runebook/` — entries + guides (shared, both sides update) |
-| **Changelog** | Both append (append-only, never modify existing entries) | Both append |
-
-### When to Use What
-
-| You're about to... | Use this |
-|---|---|
-| Build a new feature | `/specsmith-new <name>: <brief>` |
-| Research before coding | `/grimoire <query>` (auto-dispatches to relevant agents) |
-| Understand existing code before changing it | `/grimoire <query>` and `/runebook-show <name>` |
-| Rename or move files | `/chisel rename` or `/chisel move` |
-| Create or modify a backend endpoint | Code it, then `/uispec-sync` |
-| Build UI for an endpoint | `/uispec-implement <endpoint>` |
-| Update UI after a backend change | `/uispec-implement <endpoint>: <what changed>` |
-| Check if anything is out of sync | `/uispec-detect`, `/uispec-validate-ui`, `/runebook-validate` |
-| Onboard to unfamiliar code | `/runebook-show` for entries, `/runebook-show <guide>` for domain guides |
 
 ---
 
@@ -278,46 +33,29 @@ Every `/specsmith-new` triggers a three-phase process:
 
 The result is a spec you could hand to any developer and they'd know exactly what to build. All state lives in `.specsmiths/` as plain markdown — commit it to git.
 
-#### Typical workflow
-
-```bash
-# Create a spec — one-shot with name and brief
-/specsmith-new auth-refactor: Refactor the auth middleware to support both JWT and session tokens
-
-# Specsmith runs discovery, researches your codebase, and creates the spec.
-# Review the spec, then start implementing:
-/specsmith-implement
-
-# If you get interrupted, resume later — specsmith re-reads everything:
-/specsmith-resume
-
-# Requirements changed mid-flight? Edit the spec:
-/specsmith-edit auth-refactor
-
-# Working on multiple features? Switch between specs:
-/specsmith-switch payments-v2
-
-# Check the status of all your specs:
-/specsmith-status
-```
-
 For simple changes touching 1-2 files with existing dependencies, you can request lightweight research: just tell specsmith "keep it light" or "skip the deep research" and it will limit to codebase analysis only.
 
 #### Commands
 
 ```
-/specsmith-new <name>: <brief>  # one-shot: discovery -> research -> full spec
-/specsmith-new <name>           # name only: asks for brief next
-/specsmith-implement            # start active spec implementation
-/specsmith-resume               # re-read everything, continue active spec
-/specsmith-switch <name>        # save progress, switch active spec
-/specsmith-edit <name>          # revise spec mid-flight
-/specsmith-status               # dashboard of all specs with phase progress
-/specsmith-list                 # interactive list with picker
-/specsmith-show [name]          # display spec without activating
-/specsmith-archive <name>       # shelve completed/paused spec
-/specsmith-unarchive <name>     # restore archived spec
-/specsmith-drop <name>          # delete spec + research + questions
+/specsmith-new <name>: <brief>                  [BE+FE]  one-shot: discovery -> research -> full spec
+/specsmith-new <name>                           [BE+FE]  name only: asks for brief next
+/specsmith-implement                            [BE+FE]  start active spec implementation
+/specsmith-resume                               [BE+FE]  re-read everything, continue active spec
+/specsmith-switch <name>                        [BE+FE]  save progress, switch active spec
+/specsmith-edit <name>                          [BE+FE]  revise spec mid-flight
+/specsmith-status                               [BE+FE]  dashboard of all specs with phase progress
+/specsmith-list                                 [BE+FE]  interactive list with picker
+/specsmith-show [name]                          [BE+FE]  display spec without activating
+/specsmith-archive <name>                       [BE+FE]  shelve completed/paused spec
+/specsmith-unarchive <name>                     [BE+FE]  restore archived spec
+/specsmith-drop <name>                          [BE+FE]  delete spec + research + questions
+/specsmith-uispec-init                          [BE]     initialize .uispec/ in frontend project
+/specsmith-uispec-sync                          [BE]     sync API changes to .uispec/
+/specsmith-uispec-new [endpoint]                [FE]     create UI spec from .uispec/ endpoint
+/specsmith-uispec-new <endpoint>: <context>     [FE]     create UI spec with implementation guidance
+/specsmith-uispec-detect                        [FE]     find gaps between .uispec/ and UI
+/specsmith-uispec-validate                      [FE]     validate UI against .uispec/ (PASS/FAIL)
 ```
 
 ### grimoire
@@ -460,100 +198,184 @@ After chisel operations, runebook entries referencing affected files are updated
 /chisel <natural language>             # auto-detect operation
 ```
 
-### uispec-backend
+---
 
-Backend plugin for maintaining the API contract. After any endpoint change, syncs `openapi.yaml`, endpoint spec files, and `components.md` in the frontend project's `uispec/` directory.
+## Specsmith Workflows
 
-#### How it works
+Specsmith adapts to your project type. Here are the three main flows — each is self-contained with the full lifecycle from creating a spec to archiving it.
 
-UISpec Backend scans your backend routes, detects what changed, and pushes updates to the frontend's `uispec/` directory. It enforces strict ownership — backend owns the API contract (method, path, auth, request/response shapes), frontend owns the UI sections (design system, components, guidelines). Neither side overwrites the other.
+### Backend-Only Flow
 
-#### Typical workflow
-
-```bash
-# First time: generate uispec/ from all existing endpoints
-/uispec-init
-
-# After any API change (new endpoint, shape change, auth change):
-/uispec-sync
-
-# Check that all endpoints are documented and specs are consistent:
-/uispec-validate
-```
-
-The `uispec/` directory is created in the frontend project, not the backend. Configure the path in your backend CLAUDE.md (replace `{{PRJ-frontend}}` with your frontend directory name).
-
-#### What gets synced
-
-Each `/uispec-sync` updates four things in the frontend:
-
-1. `openapi.yaml` — the OpenAPI specification with paths, schemas, and auth
-2. `endpoints/<name>.md` — per-endpoint spec with request/response shapes, error codes, auth rules
-3. `components.md` — shared UI component patterns (only if new patterns are needed)
-4. **Suggested Implementation** section in each endpoint file — backend-generated component suggestions, key interactions, and things to watch out for (rate limits, file uploads, nested objects, etc.)
-
-The Suggested Implementation section gives the frontend team a head start — it infers the endpoint type (create-form, list-view, detail-view, delete-action) and suggests components, interactions, and states. Frontend can override any of it in UI Guidelines.
-
-Frontend-owned sections (UI Guidelines, States, Validation, Accessibility) are never touched.
-
-#### Commands
-
-```
-/uispec-init      # initialize uispec/ from existing backend endpoints
-/uispec-sync      # sync after backend API changes
-/uispec-validate  # check spec consistency and coverage
-```
-
-### uispec-frontend
-
-Frontend plugin for building UI from specs. Reads the API contract and design system from `uispec/`, detects gaps between specs and your implementation, and generates or updates UI code following your project's conventions.
-
-#### How it works
-
-UISpec Frontend knows which sections are backend-owned (API contract — read only) and which are frontend-owned (design system, components, UI guidelines — editable). It reads the spec, your design tokens, and your component library, then generates UI code with proper loading states, error handling, validation, and accessibility.
-
-#### Typical workflow
+For API projects, microservices, CLIs — no frontend, no UISpec commands needed.
 
 ```bash
-# See what's out of sync — missing UI for specs, API calls without specs:
-/uispec-detect
+# 1. Create a spec
+/specsmith-new auth-refactor: Refactor auth middleware to support JWT and session tokens
 
-# Build UI for a new endpoint (reads spec, design system, components):
-/uispec-implement create-user
+# 2. Review the spec
+/specsmith-show auth-refactor
 
-# Update UI after a backend change — provide context about what changed:
-/uispec-implement create-user: Added email verification — show inline validation and pending state
+# 3. Start implementing
+/specsmith-implement
 
-# Validate that UI matches the spec — PASS or FAIL with details:
-/uispec-validate-ui
+# 4. Get interrupted? Resume later
+/specsmith-resume
+
+# 5. Requirements changed? Edit the spec
+/specsmith-edit auth-refactor
+
+# 6. Continue implementing
+/specsmith-implement
+
+# 7. Working on something else? Switch specs
+/specsmith-switch payments-v2
+
+# 8. Done? Archive
+/specsmith-archive auth-refactor
+
+# At any time: check status of all specs
+/specsmith-status
 ```
 
-#### The colon syntax
+Grimoire auto-runs during the research phase. Runebook auto-updates after code changes. No UISpec commands needed.
 
-When updating existing endpoints, the colon syntax tells uispec **why** things changed and **how** you want the UI to handle it. Without context, uispec implements the spec diff mechanically. With context, you guide the decisions:
+### Full-Stack Flow (BE + FE)
+
+Backend creates the spec and implements it. API changes auto-sync to the frontend's `.uispec/` directory. Frontend picks up the changes and builds UI from the spec.
 
 ```bash
-/uispec-implement login: Session tokens replaced JWT — remove token refresh, add cookie auth
-/uispec-implement get-products: Added pagination — use infinite scroll, not page numbers
-/uispec-implement create-order: New discount_code field — collapsible promo section
+# --- Backend project ---
+
+# 1. One-time setup: create .uispec/ in the frontend project
+/specsmith-uispec-init                                    # [BE]
+
+# 2. Create a spec for the backend feature
+/specsmith-new create-user: REST endpoint for user registration with email verification
+
+# 3. Implement — auto-syncs .uispec/ when API endpoints change
+/specsmith-implement
+
+# 4. If you made API changes outside a spec, sync manually
+/specsmith-uispec-sync                                    # [BE]
+
+# --- Switch to frontend project ---
+
+# 5. See what's new/changed in .uispec/
+/specsmith-uispec-detect                                  # [FE]
+
+# 6. Build UI for an endpoint (full specsmith workflow)
+/specsmith-uispec-new create-user                         # [FE]
+# or with context about what changed:
+/specsmith-uispec-new create-user: added email verification — show pending state
+
+# 7. Resume if interrupted
+/specsmith-resume
+
+# 8. Validate UI matches the spec
+/specsmith-uispec-validate                                # [FE]
+
+# 9. Edit the spec if needed
+/specsmith-edit create-user
+
+# 10. Done? Archive
+/specsmith-archive create-user
 ```
 
-#### What `/uispec-detect` checks
+### Frontend-Only Flow
 
-1. **Unimplemented specs** — endpoint specs with no UI implementation
-2. **Undocumented API calls** — API calls in code with no corresponding spec
-3. **Shape mismatches** — request/response fields in code that don't match the spec
-4. **Design token violations** — hardcoded colors/spacing instead of design system tokens
-5. **Missing state handling** — loading, error, empty, or success states not implemented
+For frontend projects consuming an external API. The backend team (or you) provides `.uispec/` — you build UI from it.
 
-#### Commands
+```bash
+# 1. Get .uispec/ from the backend team (or create manually)
+# The backend team runs /specsmith-uispec-init from their project
+
+# 2. See what endpoints are available
+/specsmith-uispec-detect                                  # [FE]
+
+# 3. Build UI for a specific endpoint
+/specsmith-uispec-new login                               # [FE]
+
+# 4. Resume if interrupted
+/specsmith-resume
+
+# 5. Validate
+/specsmith-uispec-validate                                # [FE]
+```
+
+### Updating Existing Endpoints
+
+Most of the time you're changing something that already exists — adding a field, tweaking validation, changing a response shape.
+
+```bash
+# 1. Make the backend change, then sync the updated contract
+/specsmith-uispec-sync
+
+# 2. In the frontend, see what's out of sync
+/specsmith-uispec-detect
+
+# 3. Implement with context about what changed
+/specsmith-uispec-new create-user: Added email verification — show inline validation and pending state
+# or without context if changes are self-explanatory:
+/specsmith-uispec-new create-user
+
+# 4. Validate
+/specsmith-uispec-validate
+```
+
+The colon syntax provides context about **why** things changed and **how** you want the UI to handle it:
 
 ```
-/uispec-detect                                   # find gaps between specs and UI
-/uispec-implement <endpoint>                     # build/update UI from endpoint spec
-/uispec-implement <endpoint>: <context>          # build/update with implementation guidance
-/uispec-validate-ui                              # validate UI follows spec (PASS/FAIL)
+/specsmith-uispec-new login: Session tokens replaced JWT — remove token refresh logic, add cookie-based auth
+/specsmith-uispec-new get-products: Added pagination — use infinite scroll, not page numbers
+/specsmith-uispec-new create-order: New discount_code field — show collapsible promo section
 ```
+
+---
+
+## UISpec Deep Dive
+
+UISpec is built into specsmith. Backend projects push API contracts to `.uispec/` in the frontend project. Frontend projects read `.uispec/` and create full specsmith specs for UI implementation.
+
+### What Each Side Owns
+
+| | Backend-owned | Frontend-owned |
+|---|---|---|
+| **API contract** | `openapi.yaml`, Method/Path/Auth/Request/Response sections | Read-only |
+| **Suggested implementation** | Backend generates (component suggestions, interactions, watchouts) | Can override in UI Guidelines |
+| **UI guidelines** | Read-only | `design-system.md`, `components.md`, UI Guidelines sections |
+| **Implementation spec** | `.specsmiths/` — full spec with phased steps | Can read, doesn't modify |
+| **Documentation** | `.runebook/` — entries + guides (shared, both sides update) | `.runebook/` — entries + guides (shared, both sides update) |
+| **Changelog** | Both append (append-only, never modify existing entries) | Both append |
+
+### Cross-Endpoint Component Analysis
+
+During init and sync, specsmith analyzes all endpoints together:
+- Groups endpoints by type (list-view, detail-view, create-form, etc.)
+- Identifies shared response shapes (e.g., `user` object in multiple endpoints)
+- Detects common patterns (pagination, filters, error formats)
+- Updates `components.md` with a Shared Patterns section
+
+### Suggested Implementation
+
+Each endpoint spec includes a backend-generated Suggested Implementation section:
+- Component hierarchy (parent → children tree)
+- State flow (idle → loading → success/error)
+- Cross-endpoint reuse ("shares User pattern with list-users")
+- Interaction sequences (click → modal → fill → submit → feedback)
+- Watch-outs (rate limits, file uploads, date formatting, case transforms)
+
+Frontend can override any of it in UI Guidelines.
+
+### Auto-Sync During Implementation
+
+When `/specsmith-implement` completes a step that creates or modifies an API endpoint and a frontend project is configured (`.specsmiths/uispec.json` exists), specsmith automatically syncs the changes to `.uispec/`:
+
+- `openapi.yaml` gets the new/modified endpoints
+- `endpoints/<name>.md` files are created or updated with request/response shapes, auth rules, error codes, Suggested Implementation, and Related Endpoints
+- Cross-endpoint component analysis updates `components.md` with shared patterns
+- Frontend-owned sections (UI guidelines, design system) are preserved — never overwritten
+
+No manual sync needed during spec implementation.
 
 ---
 
@@ -562,16 +384,77 @@ When updating existing endpoints, the colon syntax tells uispec **why** things c
 ```
 specsmith ──→ grimoire     Phase 2 uses grimoire agents for research
 specsmith ──→ runebook     Read entries during implementation, update after
-specsmith ──→ uispec       After API steps, sync contract to frontend
+specsmith ──→ .uispec/     Auto-syncs API contracts when implementing endpoint steps
+specsmith-uispec-new ──→ grimoire   Research phase for component libs, a11y, codebase patterns
 runebook  ──→ chisel       After rename/move, update runebook source_files
-uispec    ──→ runebook     Keep endpoint docs consistent across both
 grimoire  ──→ chisel       Research scope before large renames
-chisel    ──→ uispec       Update spec files when renaming endpoints
+chisel    ──→ .uispec/     Update spec files when renaming endpoints
 ```
+
+### When to Use What
+
+| You're about to... | Use this |
+|---|---|
+| Build a new feature | `/specsmith-new <name>: <brief>` |
+| Research before coding | `/grimoire <query>` (auto-dispatches to relevant agents) |
+| Understand existing code before changing it | `/grimoire <query>` and `/runebook-show <name>` |
+| Rename or move files | `/chisel rename` or `/chisel move` |
+| Set up UISpec for a frontend project | `/specsmith-uispec-init` (run from backend) |
+| Sync API changes to frontend | `/specsmith-uispec-sync` (auto during spec implementation) |
+| See what UI needs implementing | `/specsmith-uispec-detect` |
+| Build UI for an endpoint | `/specsmith-uispec-new <endpoint>` |
+| Update UI after a backend change | `/specsmith-uispec-new <endpoint>: <what changed>` |
+| Check if UI matches specs | `/specsmith-uispec-validate`, `/runebook-validate` |
+| Onboard to unfamiliar code | `/runebook-show` for entries, `/runebook-show <guide>` for domain guides |
 
 ---
 
-## General CLAUDE.md Guidelines
+## All Commands Reference
+
+| Plugin | Command | Scope | Description |
+|--------|---------|-------|-------------|
+| specsmith | `/specsmith-new <name>: <brief>` | BE+FE | One-shot: discovery + research + full spec |
+| specsmith | `/specsmith-new <name>` | BE+FE | Name only: asks for brief, then discovery + research + spec |
+| specsmith | `/specsmith-implement` | BE+FE | Start active spec implementation |
+| specsmith | `/specsmith-resume` | BE+FE | Re-read everything, continue active spec |
+| specsmith | `/specsmith-switch <name>` | BE+FE | Save progress, switch to different spec |
+| specsmith | `/specsmith-edit <name>` | BE+FE | Revise spec mid-flight |
+| specsmith | `/specsmith-status` | BE+FE | Dashboard of all specs with phase progress |
+| specsmith | `/specsmith-list` | BE+FE | Interactive spec list with picker |
+| specsmith | `/specsmith-show [name]` | BE+FE | Display spec without activating |
+| specsmith | `/specsmith-archive <name>` | BE+FE | Shelve completed/paused spec |
+| specsmith | `/specsmith-unarchive <name>` | BE+FE | Restore archived spec |
+| specsmith | `/specsmith-drop <name>` | BE+FE | Delete spec + research + questions |
+| specsmith | `/specsmith-uispec-init` | BE | Initialize .uispec/ in frontend project |
+| specsmith | `/specsmith-uispec-sync` | BE | Sync API changes to .uispec/ |
+| specsmith | `/specsmith-uispec-new [endpoint]` | FE | Create UI spec from .uispec/ endpoint |
+| specsmith | `/specsmith-uispec-new <ep>: <ctx>` | FE | Create UI spec with implementation guidance |
+| specsmith | `/specsmith-uispec-detect` | FE | Find gaps between .uispec/ and UI |
+| specsmith | `/specsmith-uispec-validate` | FE | Validate UI against .uispec/ (PASS/FAIL) |
+| grimoire | `/grimoire <query>` | BE+FE | Auto-dispatch research (picks relevant agents) |
+| grimoire | `/grimoire docs <lib> <query>` | BE+FE | Library docs only |
+| grimoire | `/grimoire practices <topic>` | BE+FE | Best practices only |
+| grimoire | `/grimoire codebase <area>` | BE+FE | Codebase analysis only |
+| grimoire | `/grimoire history <area>` | BE+FE | Git history only |
+| grimoire | `/grimoire schema <area>` | BE+FE | DB schema only |
+| grimoire | `/grimoire contracts <service>` | BE+FE | External API docs only |
+| runebook | `/runebook-init` | BE+FE | Scan codebase, create .runebook/ with entries + guides |
+| runebook | `/runebook-update [name]` | BE+FE | Update entry or auto-detect from changes |
+| runebook | `/runebook-validate` | BE+FE | Check staleness, coverage, broken refs, guide freshness |
+| runebook | `/runebook-show [name]` | BE+FE | Display entry or master index |
+| runebook | `/runebook-status` | BE+FE | Dashboard with coverage, staleness, and guide health |
+| chisel | `/chisel` | BE+FE | Show available operations |
+| chisel | `/chisel rename <old> to <new>` | BE+FE | Rename + update all references |
+| chisel | `/chisel move <src> to <dest>` | BE+FE | Move + update all import paths |
+| chisel | `/chisel replace <old> with <new>` | BE+FE | Find-and-replace with scope analysis |
+| chisel | `/chisel edit <description>` | BE+FE | Small targeted code change |
+| chisel | `/chisel <natural language>` | BE+FE | Auto-detect operation |
+
+---
+
+## CLAUDE.md Guidelines and Snippets
+
+### General Guidelines
 
 Paste these into any project's `CLAUDE.md` as a baseline. They work standalone or alongside the plugin snippets below.
 
@@ -604,209 +487,645 @@ Paste these into any project's `CLAUDE.md` as a baseline. They work standalone o
 - If you introduced a bug, fix it before moving on
 ```
 
+### Plugin Snippets
+
+Copy the block matching your project type into your project's `CLAUDE.md` (after the general guidelines above).
+
+### For Standalone Projects
+
+For backend-only APIs, microservices, CLIs, or frontend-only SPAs that don't use UISpec.
+
+````markdown
+## Grimoire (MANDATORY)
+
+Research suite with 6 specialized agents. **ALWAYS research before guessing — never hallucinate library APIs or best practices.**
+
+### When to Use Grimoire
+
+| Situation | Command |
+|-----------|---------|
+| Using unfamiliar library API | `/grimoire docs <library> <question>` |
+| Security-sensitive implementation | `/grimoire practices <topic>` |
+| Before major changes or refactors | `/grimoire codebase <area>` |
+| Understanding why code exists | `/grimoire history <area>` |
+| Database/schema changes | `/grimoire schema <area>` |
+| External API integration | `/grimoire contracts <service>` |
+| Complex feature (full research) | `/grimoire <context>` (auto-dispatches all relevant agents) |
+
+### Rules
+
+- **NEVER guess library APIs** — always use `/grimoire docs` to look up exact signatures, parameters, and return types
+- **ALWAYS research best practices** before implementing security-sensitive features (auth, crypto, payments, PII)
+- **ALWAYS analyze the codebase** before major refactors to understand existing patterns and conventions
+- **ALWAYS check API contracts** before integrating with external services to understand rate limits, auth, and error handling
+- **Prefer `/grimoire <query>`** for complex features — it auto-dispatches all relevant agents in parallel
+
+### Getting Started
+
+Run `/grimoire` with no arguments to see all available research streams and examples.
+
+### Commands
+
+```
+/grimoire                              # Show available streams
+/grimoire docs <library> <query>       # Library documentation lookup
+/grimoire practices <topic>            # Best practices & pitfalls
+/grimoire codebase <area>              # Codebase analysis
+/grimoire history <area>               # Git history & prior work
+/grimoire schema <area>                # Database schema analysis
+/grimoire contracts <service>          # External API contracts
+/grimoire <context>                     # Auto-dispatch to relevant agents (full parallel research)
+```
+
 ---
 
-## CLAUDE.md Snippets
-
-Each plugin includes a ready-to-paste CLAUDE.md snippet for target projects. Add these to your project's `CLAUDE.md` (after the general guidelines above) to enforce plugin usage.
-
-**Snippet locations:**
-- Specsmith: managed via the specsmith-management awareness skill (auto-detects `.specsmiths/`)
-- Grimoire: `grimoire/skills/grimoire-awareness/assets/CLAUDE-snippet.md`
-- Runebook: `runebook/skills/runebook-awareness/assets/CLAUDE-snippet.md`
-- Chisel: `chisel/skills/chisel-awareness/assets/CLAUDE-snippet.md`
-- UISpec Backend: `uispec-backend/skills/uispec-backend/assets/CLAUDE-snippet.md`
-- UISpec Frontend: `uispec-frontend/skills/uispec-frontend/assets/CLAUDE-snippet.md`
-
-### For Backend Projects
-
-Paste the following snippets into your backend project's `CLAUDE.md`:
-
-<details>
-<summary><strong>Runebook snippet</strong> (click to expand)</summary>
-
-```markdown
 ## Runebook (MANDATORY)
 
 Living documentation lives in `.runebook/`. **ALWAYS consult before changes, ALWAYS update after changes — automatically, without asking.**
+
+### When to Use Runebook
+
+| Situation | Action |
+|-----------|--------|
+| Before modifying any code | Read relevant `.runebook/<type>/<name>.md` entries |
+| After creating a new endpoint | Create `.runebook/endpoints/<name>.md` |
+| After creating a new scheduled job | Create `.runebook/jobs/<name>.md` |
+| After creating a new service/module | Create `.runebook/services/<name>.md` |
+| After creating a new integration | Create `.runebook/integrations/<name>.md` |
+| After creating a new page/route | Create `.runebook/pages/<name>.md` |
+| After creating a new reusable component | Create `.runebook/components/<name>.md` |
+| After creating a new custom hook | Create `.runebook/hooks/<name>.md` |
+| After modifying any existing component | Update the existing entry |
+| After removing a component | Flag entry as removed (add `status: removed` to frontmatter) |
+| New business flow identified | Create `.runebook/flows/<name>.md` (ask about steps) |
 
 ### Before ANY Code Changes
 
 You MUST read relevant runebook entries before modifying code:
 1. Identify which components will be affected by your changes
 2. Read their entries from `.runebook/<type>/<name>.md`
-3. Check if a guide covers this domain — read `guides/*.md` for big-picture context
-4. Understand current behavior, dependencies, edge cases, and recent changes
+3. Understand current behavior, dependencies, edge cases, and recent changes
+4. Use this context to inform your implementation
+
+**How to find the right entries:** Match changed files to runebook entries via `source_files` in frontmatter, or search by tag/name in `.runebook/index.md`.
 
 ### After ANY Code Changes
 
 You MUST update the runebook after changes — do it automatically, do not ask:
-- New endpoint → Create `.runebook/endpoints/<name>.md`
-- New job → Create `.runebook/jobs/<name>.md`
-- New service → Create `.runebook/services/<name>.md`
-- New integration → Create `.runebook/integrations/<name>.md`
-- Modified component → Update the existing entry
-- Removed component → Flag entry as removed
-- Guide affected → Update narrative sections in the relevant guide
 
-Commands: /runebook-init, /runebook-update, /runebook-validate, /runebook-show, /runebook-status
+For every update:
+- Update the entry's behavior, dependencies, and request/response sections as needed
+- Preserve human-written notes and context — **never overwrite them**
+- Update frontmatter: `updated` date, `source_files`, `tags`
+- Append to the changelog with today's date and what changed — **changelog is append-only**
+- Update cross-references bidirectionally (if A depends on B, both entries reference each other)
+- Update `.runebook/index.md` if metadata changed (new entries, changed methods/paths/schedules)
+
+### Rules
+
+- **ALWAYS read entries before code work** — never modify code without checking runebook first
+- **ALWAYS update entries after changes** — automatically, without asking permission
+- **NEVER overwrite human context** — notes, explanations, and annotations are sacred
+- **NEVER modify existing changelog entries** — changelog is append-only
+- **ALWAYS update cross-references bidirectionally** — if entry A references B, entry B must reference A
+
+### Naming Conventions
+
+| Type | File Name Pattern | Example |
+|------|-------------------|---------|
+| Endpoints | `<method>-<path-slug>.md` | `post-users.md`, `get-orders-by-id.md` |
+| Jobs | `<job-name>.md` | `cleanup-expired-sessions.md` |
+| Services | `<service-name>.md` | `auth-service.md`, `payment-processor.md` |
+| Integrations | `<provider-name>.md` | `stripe.md`, `sendgrid.md` |
+| Flows | `<flow-name>.md` | `user-onboarding.md`, `order-checkout.md` |
+| Pages | `<route-path-slug>.md` | `users-by-id.md`, `dashboard.md` |
+| Components | `<component-name>.md` | `button.md`, `data-table.md` |
+| Hooks | `<hook-name>.md` | `use-auth.md`, `use-pagination.md` |
+
+### First-Time Setup
+
+If `.runebook/` doesn't exist yet, run `/runebook-init` to scan the codebase and create the runebook.
+
+### Commands
+
 ```
-
-See `runebook/skills/runebook-awareness/assets/CLAUDE-snippet.md` for the full version with naming conventions, integration notes, and error handling.
-
-</details>
-
-<details>
-<summary><strong>Grimoire snippet</strong> (click to expand)</summary>
-
-```markdown
-## Grimoire (MANDATORY)
-
-Research suite with 6 specialized agents. **ALWAYS research before guessing.**
-
-- NEVER guess library APIs or best practices — use `/grimoire <query>` to auto-dispatch to the right agents
-- For a quick single-stream lookup, prefix with the stream name: `/grimoire docs <library> <question>`
-- ALWAYS research before security-sensitive features (auth, crypto, payments, PII)
-- ALWAYS analyze the codebase before major refactors
-
-Commands: /grimoire <query>, /grimoire docs, /grimoire practices, /grimoire codebase, /grimoire history, /grimoire schema, /grimoire contracts
+/runebook-init              # Scan codebase, create .runebook/
+/runebook-update [name]     # Update specific entry or auto-detect from changes
+/runebook-validate          # Check staleness, coverage, broken refs
+/runebook-show [name]       # Display entry or master index
+/runebook-status            # Dashboard with coverage and staleness
 ```
-
-See `grimoire/skills/grimoire-awareness/assets/CLAUDE-snippet.md` for the full version.
-
-</details>
-
-<details>
-<summary><strong>Chisel snippet</strong> (click to expand)</summary>
-
-```markdown
-## Chisel (MANDATORY)
-
-Fast surgical code editor. **NEVER manually rename or move files — always use chisel.**
-
-- `/chisel rename <old> to <new>` — rename + update all references
-- `/chisel move <source> to <dest>` — move + update all import paths
-- `/chisel replace <old> with <new>` — find-and-replace with scope analysis
-- `/chisel edit <description>` — small targeted code change
-
-Git-aware (preserves history), framework-aware (finds tests, styles, stories), any language.
-```
-
-See `chisel/skills/chisel-awareness/assets/CLAUDE-snippet.md` for the full version.
-
-</details>
-
-<details>
-<summary><strong>UISpec Backend snippet</strong> (click to expand)</summary>
-
-```markdown
-## UISpec — Backend (MANDATORY)
-
-UI specs live in `../{{PRJ-frontend}}/uispec/`. **ALWAYS sync after API changes.**
-
-After creating/modifying/removing any endpoint:
-1. Update `../{{PRJ-frontend}}/uispec/openapi.yaml`
-2. Update `../{{PRJ-frontend}}/uispec/endpoints/<endpoint>.md`
-3. Update `../{{PRJ-frontend}}/uispec/components.md` if new UI patterns needed
-
-No exceptions. Frontend depends on this.
-
-Commands: /uispec-init, /uispec-sync, /uispec-validate
-```
-
-Replace `{{PRJ-frontend}}` with your frontend project directory name. See `uispec-backend/skills/uispec-backend/assets/CLAUDE-snippet.md` for the full version with ownership rules and conflict handling.
-
-</details>
-
-### For Frontend Projects
-
-Paste the following snippets into your frontend project's `CLAUDE.md`:
-
-<details>
-<summary><strong>Runebook snippet</strong> (same as backend — click to expand)</summary>
-
-Same snippet as above. See `runebook/skills/runebook-awareness/assets/CLAUDE-snippet.md`.
-
-</details>
-
-<details>
-<summary><strong>Grimoire snippet</strong> (same as backend — click to expand)</summary>
-
-Same snippet as above. See `grimoire/skills/grimoire-awareness/assets/CLAUDE-snippet.md`.
-
-</details>
-
-<details>
-<summary><strong>Chisel snippet</strong> (same as backend — click to expand)</summary>
-
-Same snippet as above. See `chisel/skills/chisel-awareness/assets/CLAUDE-snippet.md`.
-
-</details>
-
-<details>
-<summary><strong>UISpec Frontend snippet</strong> (click to expand)</summary>
-
-```markdown
-## UISpec — Frontend (MANDATORY)
-
-UI specs live in `uispec/`. **ALWAYS read specs before building API-connected UI.**
-
-Before creating or modifying any page/component that calls an API endpoint:
-1. Read `uispec/endpoints/<endpoint>.md` for the API contract and UI guidelines
-2. Read `uispec/components.md` for reusable patterns
-3. Read `uispec/design-system.md` for tokens and styling rules
-
-Do not modify `openapi.yaml` or API sections — those are backend-owned.
-
-Commands: /uispec-detect, /uispec-implement, /uispec-validate-ui
-```
-
-See `uispec-frontend/skills/uispec-frontend/assets/CLAUDE-snippet.md` for the full version with ownership rules and post-implementation guidance.
-
-</details>
 
 ---
 
-## All Commands Reference
+## Chisel (MANDATORY)
 
-| Plugin | Command | Description |
-|--------|---------|-------------|
-| specsmith | `/specsmith-new <name>: <brief>` | One-shot: discovery + research + full spec |
-| specsmith | `/specsmith-new <name>` | Name only: asks for brief, then discovery + research + spec |
-| specsmith | `/specsmith-implement` | Start active spec implementation |
-| specsmith | `/specsmith-resume` | Re-read everything, continue active spec |
-| specsmith | `/specsmith-switch <name>` | Save progress, switch to different spec |
-| specsmith | `/specsmith-edit <name>` | Revise spec mid-flight |
-| specsmith | `/specsmith-status` | Dashboard of all specs with phase progress |
-| specsmith | `/specsmith-list` | Interactive spec list with picker |
-| specsmith | `/specsmith-show [name]` | Display spec without activating |
-| specsmith | `/specsmith-archive <name>` | Shelve completed/paused spec |
-| specsmith | `/specsmith-unarchive <name>` | Restore archived spec |
-| specsmith | `/specsmith-drop <name>` | Delete spec + research + questions |
-| grimoire | `/grimoire <query>` | Auto-dispatch research (picks relevant agents) |
-| grimoire | `/grimoire docs <lib> <query>` | Library docs only |
-| grimoire | `/grimoire practices <topic>` | Best practices only |
-| grimoire | `/grimoire codebase <area>` | Codebase analysis only |
-| grimoire | `/grimoire history <area>` | Git history only |
-| grimoire | `/grimoire schema <area>` | DB schema only |
-| grimoire | `/grimoire contracts <service>` | External API docs only |
-| runebook | `/runebook-init` | Scan codebase, create .runebook/ with entries + guides |
-| runebook | `/runebook-update [name]` | Update entry or auto-detect from changes |
-| runebook | `/runebook-validate` | Check staleness, coverage, broken refs, guide freshness |
-| runebook | `/runebook-show [name]` | Display entry or master index |
-| runebook | `/runebook-status` | Dashboard with coverage, staleness, and guide health |
-| chisel | `/chisel` | Show available operations |
-| chisel | `/chisel rename <old> to <new>` | Rename + update all references |
-| chisel | `/chisel move <src> to <dest>` | Move + update all import paths |
-| chisel | `/chisel replace <old> with <new>` | Find-and-replace with scope analysis |
-| chisel | `/chisel edit <description>` | Small targeted code change |
-| uispec-backend | `/uispec-init` | Initialize uispec/ from backend endpoints |
-| uispec-backend | `/uispec-sync` | Sync after backend API changes |
-| uispec-backend | `/uispec-validate` | Check spec consistency and coverage |
-| uispec-frontend | `/uispec-detect` | Find gaps between specs and UI |
-| uispec-frontend | `/uispec-implement <endpoint>` | Build/update UI from endpoint spec |
-| uispec-frontend | `/uispec-implement <endpoint>: <context>` | Build/update UI with implementation guidance |
-| uispec-frontend | `/uispec-validate-ui` | Validate UI follows spec (PASS/FAIL) |
+Fast surgical code editor. **NEVER manually rename or move files — always use chisel to ensure all references are updated.**
+
+### When to Use Chisel
+
+| Situation | Command |
+|-----------|---------|
+| Rename a file, variable, function, or class | `/chisel rename <old> to <new>` |
+| Move a file or directory | `/chisel move <source> to <destination>` |
+| Find-and-replace text across files | `/chisel replace <old> with <new>` |
+| Small CSS/HTML/config tweaks | `/chisel edit <description>` |
+| Any rename, move, or targeted edit | `/chisel <natural language description>` |
+
+### Rules
+
+- **NEVER rename or move files manually** (with `mv`, manual delete+create, or IDE refactoring) — always use `/chisel` to ensure all imports, references, and config files are updated
+- **NEVER do find-and-replace with sed/awk** — use `/chisel replace` which handles word boundaries, scope analysis, and verification
+- **ALWAYS verify** that chisel found and updated all references — check the summary it produces
+- **Use `/chisel rename`** for any entity rename: files, directories, variables, functions, classes, components, modules
+
+### Commands
+
+```
+/chisel                                # Show available operations
+/chisel rename <old> to <new>          # Rename + update all references
+/chisel move <source> to <dest>        # Move + update all import paths
+/chisel replace <old> with <new>       # Find-and-replace with scope analysis
+/chisel edit <description>             # Small targeted code change
+/chisel <natural language>             # Auto-detect operation
+```
+
+---
+
+## Cross-Plugin Workflows
+
+- **`/specsmith-new`** auto-uses grimoire agents for research when grimoire is installed — no manual invocation needed
+- **`/specsmith-implement`** reads runebook entries before each step and updates them after each step
+- **`/chisel` operations** (rename, move, replace) update runebook `source_files` references automatically
+- **`/grimoire` research** reads `.runebook/` entries as input context for richer findings
+- After any rename or move, always use `/chisel` to keep runebook references in sync
+````
+
+### For Full-Stack Backend Projects
+
+````markdown
+## Grimoire (MANDATORY)
+
+Research suite with 6 specialized agents. **ALWAYS research before guessing — never hallucinate library APIs or best practices.**
+
+### When to Use Grimoire
+
+| Situation | Command |
+|-----------|---------|
+| Using unfamiliar library API | `/grimoire docs <library> <question>` |
+| Security-sensitive implementation | `/grimoire practices <topic>` |
+| Before major changes or refactors | `/grimoire codebase <area>` |
+| Understanding why code exists | `/grimoire history <area>` |
+| Database/schema changes | `/grimoire schema <area>` |
+| External API integration | `/grimoire contracts <service>` |
+| Complex feature (full research) | `/grimoire <context>` (auto-dispatches all relevant agents) |
+
+### Rules
+
+- **NEVER guess library APIs** — always use `/grimoire docs` to look up exact signatures, parameters, and return types
+- **ALWAYS research best practices** before implementing security-sensitive features (auth, crypto, payments, PII)
+- **ALWAYS analyze the codebase** before major refactors to understand existing patterns and conventions
+- **ALWAYS check API contracts** before integrating with external services to understand rate limits, auth, and error handling
+- **Prefer `/grimoire <query>`** for complex features — it auto-dispatches all relevant agents in parallel
+
+### Getting Started
+
+Run `/grimoire` with no arguments to see all available research streams and examples.
+
+### Commands
+
+```
+/grimoire                              # Show available streams
+/grimoire docs <library> <query>       # Library documentation lookup
+/grimoire practices <topic>            # Best practices & pitfalls
+/grimoire codebase <area>              # Codebase analysis
+/grimoire history <area>               # Git history & prior work
+/grimoire schema <area>                # Database schema analysis
+/grimoire contracts <service>          # External API contracts
+/grimoire <context>                     # Auto-dispatch to relevant agents (full parallel research)
+```
+
+---
+
+## Runebook (MANDATORY)
+
+Living documentation lives in `.runebook/`. **ALWAYS consult before changes, ALWAYS update after changes — automatically, without asking.**
+
+### When to Use Runebook
+
+| Situation | Action |
+|-----------|--------|
+| Before modifying any code | Read relevant `.runebook/<type>/<name>.md` entries |
+| After creating a new endpoint | Create `.runebook/endpoints/<name>.md` |
+| After creating a new scheduled job | Create `.runebook/jobs/<name>.md` |
+| After creating a new service/module | Create `.runebook/services/<name>.md` |
+| After creating a new integration | Create `.runebook/integrations/<name>.md` |
+| After creating a new page/route | Create `.runebook/pages/<name>.md` |
+| After creating a new reusable component | Create `.runebook/components/<name>.md` |
+| After creating a new custom hook | Create `.runebook/hooks/<name>.md` |
+| After modifying any existing component | Update the existing entry |
+| After removing a component | Flag entry as removed (add `status: removed` to frontmatter) |
+| New business flow identified | Create `.runebook/flows/<name>.md` (ask about steps) |
+
+### Before ANY Code Changes
+
+You MUST read relevant runebook entries before modifying code:
+1. Identify which components will be affected by your changes
+2. Read their entries from `.runebook/<type>/<name>.md`
+3. Understand current behavior, dependencies, edge cases, and recent changes
+4. Use this context to inform your implementation
+
+**How to find the right entries:** Match changed files to runebook entries via `source_files` in frontmatter, or search by tag/name in `.runebook/index.md`.
+
+### After ANY Code Changes
+
+You MUST update the runebook after changes — do it automatically, do not ask:
+
+For every update:
+- Update the entry's behavior, dependencies, and request/response sections as needed
+- Preserve human-written notes and context — **never overwrite them**
+- Update frontmatter: `updated` date, `source_files`, `tags`
+- Append to the changelog with today's date and what changed — **changelog is append-only**
+- Update cross-references bidirectionally (if A depends on B, both entries reference each other)
+- Update `.runebook/index.md` if metadata changed (new entries, changed methods/paths/schedules)
+
+### Rules
+
+- **ALWAYS read entries before code work** — never modify code without checking runebook first
+- **ALWAYS update entries after changes** — automatically, without asking permission
+- **NEVER overwrite human context** — notes, explanations, and annotations are sacred
+- **NEVER modify existing changelog entries** — changelog is append-only
+- **ALWAYS update cross-references bidirectionally** — if entry A references B, entry B must reference A
+
+### Naming Conventions
+
+| Type | File Name Pattern | Example |
+|------|-------------------|---------|
+| Endpoints | `<method>-<path-slug>.md` | `post-users.md`, `get-orders-by-id.md` |
+| Jobs | `<job-name>.md` | `cleanup-expired-sessions.md` |
+| Services | `<service-name>.md` | `auth-service.md`, `payment-processor.md` |
+| Integrations | `<provider-name>.md` | `stripe.md`, `sendgrid.md` |
+| Flows | `<flow-name>.md` | `user-onboarding.md`, `order-checkout.md` |
+| Pages | `<route-path-slug>.md` | `users-by-id.md`, `dashboard.md` |
+| Components | `<component-name>.md` | `button.md`, `data-table.md` |
+| Hooks | `<hook-name>.md` | `use-auth.md`, `use-pagination.md` |
+
+### First-Time Setup
+
+If `.runebook/` doesn't exist yet, run `/runebook-init` to scan the codebase and create the runebook.
+
+### Commands
+
+```
+/runebook-init              # Scan codebase, create .runebook/
+/runebook-update [name]     # Update specific entry or auto-detect from changes
+/runebook-validate          # Check staleness, coverage, broken refs
+/runebook-show [name]       # Display entry or master index
+/runebook-status            # Dashboard with coverage and staleness
+```
+
+---
+
+## Chisel (MANDATORY)
+
+Fast surgical code editor. **NEVER manually rename or move files — always use chisel to ensure all references are updated.**
+
+### When to Use Chisel
+
+| Situation | Command |
+|-----------|---------|
+| Rename a file, variable, function, or class | `/chisel rename <old> to <new>` |
+| Move a file or directory | `/chisel move <source> to <destination>` |
+| Find-and-replace text across files | `/chisel replace <old> with <new>` |
+| Small CSS/HTML/config tweaks | `/chisel edit <description>` |
+| Any rename, move, or targeted edit | `/chisel <natural language description>` |
+
+### Rules
+
+- **NEVER rename or move files manually** (with `mv`, manual delete+create, or IDE refactoring) — always use `/chisel` to ensure all imports, references, and config files are updated
+- **NEVER do find-and-replace with sed/awk** — use `/chisel replace` which handles word boundaries, scope analysis, and verification
+- **ALWAYS verify** that chisel found and updated all references — check the summary it produces
+- **Use `/chisel rename`** for any entity rename: files, directories, variables, functions, classes, components, modules
+
+### Commands
+
+```
+/chisel                                # Show available operations
+/chisel rename <old> to <new>          # Rename + update all references
+/chisel move <source> to <dest>        # Move + update all import paths
+/chisel replace <old> with <new>       # Find-and-replace with scope analysis
+/chisel edit <description>             # Small targeted code change
+/chisel <natural language>             # Auto-detect operation
+```
+
+---
+
+## UISpec — Backend (MANDATORY)
+
+UI specs live in `../<frontend-project>/.uispec/`. **ALWAYS sync after API changes.**
+
+### When to Sync
+
+| Change | Action |
+|--------|--------|
+| New endpoint created | Run `/specsmith-uispec-sync` |
+| Request/response shape modified | Run `/specsmith-uispec-sync` |
+| Auth/permissions changed | Run `/specsmith-uispec-sync` |
+| Endpoint removed or deprecated | Run `/specsmith-uispec-sync` |
+| New error response formats | Run `/specsmith-uispec-sync` |
+| Pagination/filtering changed | Run `/specsmith-uispec-sync` |
+
+### Auto-Sync
+
+When implementing a specsmith spec (`/specsmith-implement`), API endpoint changes are **automatically synced** to `.uispec/`. No manual sync needed during spec implementation.
+
+Manual `/specsmith-uispec-sync` is for changes made outside of specsmith specs.
+
+### Ownership Rules
+
+| Section | Owner | Backend Can |
+|---------|-------|-------------|
+| openapi.yaml | Backend | Read + Write |
+| Method, Path, Auth, Request, Response, Errors | Backend | Read + Write |
+| Suggested Implementation | Backend | Generate (frontend can override) |
+| Related Endpoints | Backend | Read + Write |
+| UI Guidelines, States, Accessibility | Frontend | Read only |
+| design-system.md | Frontend | Read only |
+| components.md (Shared Patterns) | Backend | Read + Write |
+| components.md (everything else) | Frontend | Read only |
+| Changelog | Shared | Append only |
+
+### Rules
+
+- **ALWAYS update openapi.yaml first** — it is the API source of truth
+- **NEVER modify frontend-owned sections** — UI Guidelines, design-system.md
+- **ALWAYS preserve manual additions** — read existing files before modifying
+- **ALWAYS add changelog entries** — every sync appends date + what changed
+
+### First-Time Setup
+
+Run `/specsmith-uispec-init` to create `.uispec/` in the frontend project and generate specs from existing endpoints.
+
+### Commands
+
+```
+/specsmith-uispec-init      [BE]  First-time setup — create .uispec/ in frontend
+/specsmith-uispec-sync      [BE]  Sync after backend API changes
+```
+
+Frontend commands (run these in the frontend project, not here):
+```
+/specsmith-uispec-detect    [FE]  Find gaps between specs and UI
+/specsmith-uispec-new       [FE]  Create UI spec from .uispec/ endpoint
+/specsmith-uispec-validate  [FE]  Validate UI against .uispec/ (PASS/FAIL)
+```
+
+---
+
+## Cross-Plugin Workflows
+
+- **`/specsmith-new`** auto-uses grimoire agents for research when grimoire is installed — no manual invocation needed
+- **`/specsmith-implement`** reads runebook entries before each step, updates them after each step, and auto-syncs `.uispec/` when API endpoints change
+- **`/chisel` operations** (rename, move, replace) update runebook `source_files` references and corresponding `.uispec/` endpoint spec files automatically
+- **`/grimoire` research** reads `.runebook/` entries as input context for richer findings
+- After any rename or move, always use `/chisel` to keep runebook and UISpec references in sync
+- Use `/grimoire contracts` before designing new `.uispec/` endpoint specs
+````
+
+### For Full-Stack Frontend Projects
+
+````markdown
+## Grimoire (MANDATORY)
+
+Research suite with 6 specialized agents. **ALWAYS research before guessing — never hallucinate library APIs or best practices.**
+
+### When to Use Grimoire
+
+| Situation | Command |
+|-----------|---------|
+| Using unfamiliar library API | `/grimoire docs <library> <question>` |
+| Security-sensitive implementation | `/grimoire practices <topic>` |
+| Before major changes or refactors | `/grimoire codebase <area>` |
+| Understanding why code exists | `/grimoire history <area>` |
+| Database/schema changes | `/grimoire schema <area>` |
+| External API integration | `/grimoire contracts <service>` |
+| Complex feature (full research) | `/grimoire <context>` (auto-dispatches all relevant agents) |
+
+### Rules
+
+- **NEVER guess library APIs** — always use `/grimoire docs` to look up exact signatures, parameters, and return types
+- **ALWAYS research best practices** before implementing security-sensitive features (auth, crypto, payments, PII)
+- **ALWAYS analyze the codebase** before major refactors to understand existing patterns and conventions
+- **ALWAYS check API contracts** before integrating with external services to understand rate limits, auth, and error handling
+- **Prefer `/grimoire <query>`** for complex features — it auto-dispatches all relevant agents in parallel
+
+### Getting Started
+
+Run `/grimoire` with no arguments to see all available research streams and examples.
+
+### Commands
+
+```
+/grimoire                              # Show available streams
+/grimoire docs <library> <query>       # Library documentation lookup
+/grimoire practices <topic>            # Best practices & pitfalls
+/grimoire codebase <area>              # Codebase analysis
+/grimoire history <area>               # Git history & prior work
+/grimoire schema <area>                # Database schema analysis
+/grimoire contracts <service>          # External API contracts
+/grimoire <context>                     # Auto-dispatch to relevant agents (full parallel research)
+```
+
+---
+
+## Runebook (MANDATORY)
+
+Living documentation lives in `.runebook/`. **ALWAYS consult before changes, ALWAYS update after changes — automatically, without asking.**
+
+### When to Use Runebook
+
+| Situation | Action |
+|-----------|--------|
+| Before modifying any code | Read relevant `.runebook/<type>/<name>.md` entries |
+| After creating a new endpoint | Create `.runebook/endpoints/<name>.md` |
+| After creating a new scheduled job | Create `.runebook/jobs/<name>.md` |
+| After creating a new service/module | Create `.runebook/services/<name>.md` |
+| After creating a new integration | Create `.runebook/integrations/<name>.md` |
+| After creating a new page/route | Create `.runebook/pages/<name>.md` |
+| After creating a new reusable component | Create `.runebook/components/<name>.md` |
+| After creating a new custom hook | Create `.runebook/hooks/<name>.md` |
+| After modifying any existing component | Update the existing entry |
+| After removing a component | Flag entry as removed (add `status: removed` to frontmatter) |
+| New business flow identified | Create `.runebook/flows/<name>.md` (ask about steps) |
+
+### Before ANY Code Changes
+
+You MUST read relevant runebook entries before modifying code:
+1. Identify which components will be affected by your changes
+2. Read their entries from `.runebook/<type>/<name>.md`
+3. Understand current behavior, dependencies, edge cases, and recent changes
+4. Use this context to inform your implementation
+
+**How to find the right entries:** Match changed files to runebook entries via `source_files` in frontmatter, or search by tag/name in `.runebook/index.md`.
+
+### After ANY Code Changes
+
+You MUST update the runebook after changes — do it automatically, do not ask:
+
+For every update:
+- Update the entry's behavior, dependencies, and request/response sections as needed
+- Preserve human-written notes and context — **never overwrite them**
+- Update frontmatter: `updated` date, `source_files`, `tags`
+- Append to the changelog with today's date and what changed — **changelog is append-only**
+- Update cross-references bidirectionally (if A depends on B, both entries reference each other)
+- Update `.runebook/index.md` if metadata changed (new entries, changed methods/paths/schedules)
+
+### Rules
+
+- **ALWAYS read entries before code work** — never modify code without checking runebook first
+- **ALWAYS update entries after changes** — automatically, without asking permission
+- **NEVER overwrite human context** — notes, explanations, and annotations are sacred
+- **NEVER modify existing changelog entries** — changelog is append-only
+- **ALWAYS update cross-references bidirectionally** — if entry A references B, entry B must reference A
+
+### Naming Conventions
+
+| Type | File Name Pattern | Example |
+|------|-------------------|---------|
+| Endpoints | `<method>-<path-slug>.md` | `post-users.md`, `get-orders-by-id.md` |
+| Jobs | `<job-name>.md` | `cleanup-expired-sessions.md` |
+| Services | `<service-name>.md` | `auth-service.md`, `payment-processor.md` |
+| Integrations | `<provider-name>.md` | `stripe.md`, `sendgrid.md` |
+| Flows | `<flow-name>.md` | `user-onboarding.md`, `order-checkout.md` |
+| Pages | `<route-path-slug>.md` | `users-by-id.md`, `dashboard.md` |
+| Components | `<component-name>.md` | `button.md`, `data-table.md` |
+| Hooks | `<hook-name>.md` | `use-auth.md`, `use-pagination.md` |
+
+### First-Time Setup
+
+If `.runebook/` doesn't exist yet, run `/runebook-init` to scan the codebase and create the runebook.
+
+### Commands
+
+```
+/runebook-init              # Scan codebase, create .runebook/
+/runebook-update [name]     # Update specific entry or auto-detect from changes
+/runebook-validate          # Check staleness, coverage, broken refs
+/runebook-show [name]       # Display entry or master index
+/runebook-status            # Dashboard with coverage and staleness
+```
+
+---
+
+## Chisel (MANDATORY)
+
+Fast surgical code editor. **NEVER manually rename or move files — always use chisel to ensure all references are updated.**
+
+### When to Use Chisel
+
+| Situation | Command |
+|-----------|---------|
+| Rename a file, variable, function, or class | `/chisel rename <old> to <new>` |
+| Move a file or directory | `/chisel move <source> to <destination>` |
+| Find-and-replace text across files | `/chisel replace <old> with <new>` |
+| Small CSS/HTML/config tweaks | `/chisel edit <description>` |
+| Any rename, move, or targeted edit | `/chisel <natural language description>` |
+
+### Rules
+
+- **NEVER rename or move files manually** (with `mv`, manual delete+create, or IDE refactoring) — always use `/chisel` to ensure all imports, references, and config files are updated
+- **NEVER do find-and-replace with sed/awk** — use `/chisel replace` which handles word boundaries, scope analysis, and verification
+- **ALWAYS verify** that chisel found and updated all references — check the summary it produces
+- **Use `/chisel rename`** for any entity rename: files, directories, variables, functions, classes, components, modules
+
+### Commands
+
+```
+/chisel                                # Show available operations
+/chisel rename <old> to <new>          # Rename + update all references
+/chisel move <source> to <dest>        # Move + update all import paths
+/chisel replace <old> with <new>       # Find-and-replace with scope analysis
+/chisel edit <description>             # Small targeted code change
+/chisel <natural language>             # Auto-detect operation
+```
+
+---
+
+## UISpec — Frontend (MANDATORY)
+
+UI specs live in `.uispec/`. **ALWAYS read specs before building API-connected UI.**
+
+### When to Use
+
+| Situation | Action |
+|-----------|--------|
+| Check what needs implementing | `/specsmith-uispec-detect` |
+| Build UI for an endpoint | `/specsmith-uispec-new <endpoint>` |
+| Build with context about changes | `/specsmith-uispec-new <endpoint>: <context>` |
+| Validate UI matches specs | `/specsmith-uispec-validate` |
+| Resume UI implementation | `/specsmith-resume` |
+
+### Workflow
+
+```
+/specsmith-uispec-detect                    # See what's new/changed
+/specsmith-uispec-new login                 # Full workflow: discover → research → plan → implement → validate
+/specsmith-uispec-new login: added 2FA      # With context about what changed
+/specsmith-resume                           # Continue from where you left off
+```
+
+### Ownership Rules
+
+| Section | Owner | Frontend Can |
+|---------|-------|--------------|
+| openapi.yaml | Backend | Read only |
+| Method, Path, Auth, Request, Response | Backend | Read only |
+| UI Guidelines, States, Accessibility | Frontend | Read + Write |
+| design-system.md | Frontend | Read + Write |
+| components.md (except Shared Patterns) | Frontend | Read + Write |
+
+### Rules
+
+- **NEVER modify `openapi.yaml`** — backend-owned
+- **NEVER modify API sections** in endpoint files — backend-owned
+- **ALWAYS read the spec first** before building API-connected components
+- **ALWAYS use design tokens** from `design-system.md` — never hardcode values
+- **ALWAYS update UI Guidelines** after building — document components used, a11y, state management
+- **ALWAYS flag API discrepancies** — if actual API doesn't match spec, flag for backend team
+
+### Commands
+
+```
+/specsmith-uispec-detect              [FE]  Find gaps between specs and UI
+/specsmith-uispec-new                 [FE]  Show unimplemented endpoints, pick one
+/specsmith-uispec-new <ep>            [FE]  Full workflow for specific endpoint
+/specsmith-uispec-new <ep>: <context> [FE]  Full workflow with implementation guidance
+/specsmith-uispec-validate            [FE]  PASS/FAIL conformance checks
+```
+
+Backend commands (run these in the backend project, not here):
+```
+/specsmith-uispec-init                [BE]  First-time setup — create .uispec/ in frontend
+/specsmith-uispec-sync                [BE]  Sync after backend API changes
+```
+
+### Notes
+
+- If `.uispec/` doesn't exist, ask the backend team to run `/specsmith-uispec-init`
+- If an endpoint spec doesn't exist, flag it for the backend team
+- If API response doesn't match spec, flag the discrepancy immediately
+
+---
+
+## Cross-Plugin Workflows
+
+- **`/specsmith-new`** auto-uses grimoire agents for research when grimoire is installed — no manual invocation needed
+- **`/specsmith-implement`** reads runebook entries before each step, updates them after each step, and auto-syncs `.uispec/` when API endpoints change
+- **`/chisel` operations** (rename, move, replace) update runebook `source_files` references and corresponding `.uispec/` endpoint spec files automatically
+- **`/grimoire` research** reads `.runebook/` entries as input context for richer findings
+- After any rename or move, always use `/chisel` to keep runebook and UISpec references in sync
+- Use `/grimoire docs` for component library APIs and `/grimoire practices` for a11y best practices when building UI from specs
+````
 
 ---
 
@@ -818,17 +1137,24 @@ Each plugin follows a consistent architecture:
 
 - **Commands** (`commands/<name>.md`) — thin wrappers (~15 lines) that declare allowed tools and invoke a skill action
 - **Skills** (`skills/<name>/SKILL.md`) — thick implementation containing all logic, state management, and workflows
-- **Agents** (`agents/<name>.md`) — specialized subagents spawned via the Task tool for focused work
+- **Agents** (`agents/<name>.md`) — specialized subagents spawned via the Task tool for focused work (grimoire, runebook, chisel)
 - **Awareness skills** (`skills/<name>-awareness/SKILL.md`) — proactive triggers that detect when a plugin should activate
 
 ### State Management
 
 All state is plain markdown files designed to be committed to git:
 
-- `.specsmiths/<name>.md` — spec with YAML frontmatter (status, phase, steps)
+- `.specsmiths/<name>.md` — spec with YAML frontmatter (`status`, `current_phase`, `total_phases`)
 - `.specsmiths/<name>.research.md` — research findings from subagents
 - `.specsmiths/<name>.questions.md` — discovery Q&A log
+- `.specsmiths/active.json` — tracks active spec (`{"active": "<name>", "last_switched": "<ISO date>"}`)
+- `.specsmiths/uispec.json` — UISpec config (`{"frontend_path": "../frontend", "last_synced": "<ISO>"}`)
+- `.specsmiths/<endpoint>-ui.md` — UI implementation spec (created by `/specsmith-uispec-new`)
+- `.specsmiths/<endpoint>-ui.research.md` — UI research findings
+- `.uispec/openapi.yaml` — API contract (backend-owned)
+- `.uispec/endpoints/<endpoint>.md` — per-endpoint spec with API sections + Suggested Implementation + UI Guidelines
+- `.uispec/design-system.md` — design tokens (frontend-owned)
+- `.uispec/components.md` — shared component patterns (Shared Patterns section backend-owned, rest frontend-owned)
 - `.runebook/index.md` — master index with links, tags, dates
 - `.runebook/<type>/<name>.md` — entry with YAML frontmatter (endpoints, jobs, flows, services, integrations, pages, components, hooks)
 - `.runebook/guides/<name>.md` — narrative system guides organized by feature domain
-- `uispec/` — UI specifications (created in frontend projects)

@@ -1,5 +1,6 @@
 ---
 description: "Create a new implementation spec through discovery interview and deep research. Usage: /specsmith-new <name>: <brief>"
+scope: both
 allowed-tools: Read, Edit, Write, Bash, Glob, Grep, LS, TodoRead, TodoWrite, Task, WebSearch, WebFetch, AskUserQuestion
 ---
 

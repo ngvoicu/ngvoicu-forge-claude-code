@@ -1,5 +1,6 @@
 ---
 description: "Display a spec without activating it. Usage: /specsmith-show [name]"
+scope: both
 allowed-tools: Read, Glob, Grep
 ---
 

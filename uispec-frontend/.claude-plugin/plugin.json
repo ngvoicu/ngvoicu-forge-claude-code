@@ -1,8 +1,0 @@
-{
-  "name": "uispec-frontend",
-  "description": "Frontend plugin for consuming UI specifications. Reads specs from uispec/ to guide component development, enforce API contracts, and maintain design system consistency. Commands: /uispec-detect, /uispec-implement, /uispec-validate-ui.",
-  "version": "1.1.0",
-  "author": {
-    "name": "Gabriel Voicu"
-  }
-}

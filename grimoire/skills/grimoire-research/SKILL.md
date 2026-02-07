@@ -93,6 +93,26 @@ Read the research context and determine which agents to spawn. Use these signals
 
 Minimum: 1 agent (codebase). Maximum: all 6.
 
+**Runebook context enrichment** (if runebook is installed):
+- Check if `.runebook/` exists at the project root
+- If yes:
+  - From the research context, identify component names, file paths, or domain areas
+    that might match runebook entries
+  - Search `.runebook/` for matching entries by name, tags, or source_files
+  - Read up to 5 most relevant entries (prioritize entries whose `source_files`
+    overlap with the research area)
+  - Check if any guide covers this domain (grep `guides/*.md` for matching domain/tags)
+  - Append to the research context passed to each agent:
+    ```
+    ## Existing Documentation (from .runebook/)
+    <For each entry: type, name, summary, dependencies, most recent changelog entry>
+    <If a guide matched: the guide's Overview and How It Works sections>
+    ```
+  - This gives agents pre-existing knowledge about the components,
+    reducing redundant scanning and improving research quality
+- If `.runebook/` does NOT exist:
+  - Skip silently — proceed without runebook enrichment
+
 ### Step 2: Spawn Agents in Parallel
 
 For each selected agent, spawn via the Task tool simultaneously:

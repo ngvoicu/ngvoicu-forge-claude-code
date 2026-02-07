@@ -574,8 +574,21 @@ Start implementation of the active spec. This action bridges planning and execut
 2. If no active spec, error: "No active spec. Use `/specsmith-switch <name>` to activate one first."
 3. Read the spec file, its `.research.md`, and `.questions.md` for full context
 4. Find the current phase and first unchecked step
-5. Create TodoWrite tasks for all remaining steps in the current phase
-6. Begin implementing the first unchecked step
+5. **Read runebook context** (if runebook is installed):
+   - Check if `.runebook/` exists at the project root
+   - If yes:
+     - From the spec, collect file paths mentioned in the **Where:** fields
+       of steps in the current phase
+     - Grep `.runebook/` entry frontmatter for `source_files` matching those paths
+     - Read each matching entry to understand current documented behavior,
+       dependencies, edge cases, and recent changelog entries
+     - Check if a guide covers this domain (grep `guides/*.md` `covers` field)
+     - Hold this context for use during implementation — do not dump to user
+     - Note components with no entry for creation after steps complete
+   - If `.runebook/` does NOT exist:
+     - Skip silently
+6. Create TodoWrite tasks for all remaining steps in the current phase
+7. Begin implementing the first unchecked step
 
 ---
 
@@ -595,12 +608,35 @@ Start implementation of the active spec. This action bridges planning and execut
    - "✓ Step X.Y complete. Moving to X.Z..."
    - Or at phase boundary: "✓ Phase X complete. [acceptance criteria passed]"
 
-4. **UISpec reminder** (if the completed step created or modified an API endpoint):
+4. **UISpec auto-sync** (if the completed step created or modified an API endpoint):
    - Check if the step's **Where:** references route/controller/handler files,
      or the step's **What:** mentions creating/modifying an API endpoint
-   - If yes, append to the step completion announcement:
-     "💡 This step changed API endpoints. Run `/uispec-sync` to update the API contract."
+   - If yes AND `.specsmiths/uispec.json` exists (frontend is configured):
+     - Auto-run the sync logic from `specsmith:specsmith-uispec` skill action `sync`
+     - Append to the step completion announcement:
+       "📋 Synced API changes to .uispec/ in <frontend-project>"
+   - If yes but `.specsmiths/uispec.json` does NOT exist:
+     - Skip silently — this is a backend-only project
    - If the step didn't touch API endpoints, skip silently
+
+5. **Runebook update** (if affected files are tracked by runebook):
+   - Check if `.runebook/` exists at the project root
+   - If yes:
+     - Identify which files were created or modified in this step
+       (from the step's **Where:** field)
+     - Grep `.runebook/` entry frontmatter for `source_files` matching those paths
+     - For each matching entry: re-read the source files, update the entry body
+       (behavior, dependencies, request/response shapes — whatever changed),
+       preserve human-written context, append a changelog line:
+       `- <date> Updated during specsmith step X.Y (<spec-name>)`
+     - If a new component was created with no existing entry, create one
+       using the appropriate runebook template
+     - If any updated entries are covered by a guide (check `covers` frontmatter
+       in `guides/*.md`), update the guide's auto-derivable sections
+     - Append to the step completion announcement:
+       "Updated runebook: `<type>/<name>`, `<type>/<name>`"
+   - If `.runebook/` does NOT exist:
+     - Skip silently — runebook is not installed
 
 **DO NOT proceed to the next step until the current step is marked done in the file.**
 
@@ -621,8 +657,10 @@ If interrupted or asked to switch, complete the current step first or explicitly
    - Continue to next phase?
    - Switch to a different spec?
    - Stop here for now?
-3. If any steps in this phase created or modified API endpoints, include in the phase completion summary:
-   "📋 This phase changed API endpoints. Run `/uispec-sync` to update the API contracts, then optionally write UI guidelines in the endpoint specs."
+3. If any steps in this phase created or modified API endpoints:
+   - If `.specsmiths/uispec.json` exists: API changes were already auto-synced per-step. Include in summary:
+     "📋 API changes from this phase have been synced to .uispec/."
+   - If `.specsmiths/uispec.json` does NOT exist: skip — backend-only project.
 4. Update `current_phase` in frontmatter
 5. If this was the last phase, set `status: complete`
 

@@ -1,5 +1,6 @@
 ---
 description: "Archive a completed or shelved spec. Usage: /specsmith-archive <name>"
+scope: both
 allowed-tools: Read, Edit, Write, Glob
 ---
 

@@ -82,7 +82,7 @@ You are a thorough codebase analysis agent. Your job is to discover application 
    - What it depends on (other services, databases, external APIs)
    - How it handles errors and edge cases
    - What it returns or produces
-11. **Identify feature domains**: As you scan, cluster components that work together on a single feature area:
+11. **Identify feature domains (REQUIRED — do not skip)**: As you scan, cluster components that work together on a single feature area:
     - Same tags (e.g. `auth`, `payments`)
     - Import each other (e.g. endpoint calls service calls integration)
     - Serve the same user flow (e.g. checkout: cart endpoint → payment service → stripe integration → email job)
@@ -94,7 +94,9 @@ You are a thorough codebase analysis agent. Your job is to discover application 
     - If two related clusters share a conceptual parent, merge them (e.g. "oauth-login" + "api-key-auth" → "authentication")
     - Flag uncertain cases: "unsure if X and Y should be separate domains or merged"
 
-    Report as "Guide-Worthy Domains" in your output.
+    If no clusters of 3+ components across 2+ types exist, recommend a single "how-it-works" domain covering all discovered components — describe how they connect as one system. There is always at least one domain.
+
+    Report as "Guide-Worthy Domains" in your output. This section is MANDATORY — every scan must include it.
 
 ### Scoped Scan (update mode)
 
@@ -164,9 +166,12 @@ Return your findings as a structured report:
 - Total entries discovered: <n> (<breakdown by type>)
 - Recommended guide approach: <"per-domain guides" if 10+ entries, "single how-it-works guide" if fewer>
 
-### Guide-Worthy Domains
-For each cluster of 3+ components across 2+ types that work together on a feature:
-- **<domain name>** (e.g. "authentication", "payments", "onboarding")
+### Guide-Worthy Domains (REQUIRED — always include this section)
+
+**This section MUST appear in every scan output.** If no clusters of 3+ components across 2+ types exist, include a single "how-it-works" domain covering all discovered components.
+
+For each domain:
+- **<domain name>** (e.g. "authentication", "payments", "onboarding", or "how-it-works" as catch-all)
   - Components: <list of entries that belong to this domain, with types>
   - Narrative thread: <one paragraph explaining how these components connect — tell the story of a user flow through this domain>
   - Key flow: <one-sentence summary of the main path>
@@ -189,3 +194,4 @@ For each cluster of 3+ components across 2+ types that work together on a featur
 - **Skip generated code** — migration files, compiled output, lockfiles
 - **Flag uncertainty** — if you can't determine behavior from code alone, say so
 - **Identify domains** — as you scan, notice which components share a feature area (same tags, import each other, serve the same user flow). Report these as guide-worthy domains so the init process can generate narrative guides
+- **Guide-Worthy Domains are mandatory output** — every scan MUST include the Guide-Worthy Domains section, even if only a single catch-all "how-it-works" domain is warranted

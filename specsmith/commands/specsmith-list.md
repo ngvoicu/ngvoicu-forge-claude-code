@@ -1,5 +1,6 @@
 ---
 description: "List all specs with interactive picker. Usage: /specsmith-list"
+scope: both
 allowed-tools: Read, Glob, Grep, AskUserQuestion
 ---
 

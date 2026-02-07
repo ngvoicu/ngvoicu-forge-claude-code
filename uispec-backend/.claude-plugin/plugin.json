@@ -1,8 +1,0 @@
-{
-  "name": "uispec-backend",
-  "description": "Backend plugin for maintaining UI specifications. Syncs openapi.yaml, endpoint specs, and component patterns after API changes. Commands: /uispec-init, /uispec-sync, /uispec-validate.",
-  "version": "1.1.0",
-  "author": {
-    "name": "Gabriel Voicu"
-  }
-}

@@ -1,5 +1,6 @@
 ---
 description: "Restore an archived spec. Usage: /specsmith-unarchive <name>"
+scope: both
 allowed-tools: Read, Edit, Write, Glob
 ---
 

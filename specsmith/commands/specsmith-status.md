@@ -1,5 +1,6 @@
 ---
 description: "Show status dashboard of all specs with phase-level detail. Usage: /specsmith-status"
+scope: both
 allowed-tools: Read, Glob, Grep
 ---
 

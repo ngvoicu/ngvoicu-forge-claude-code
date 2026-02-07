@@ -1,7 +1,7 @@
 {
   "name": "specsmith",
-  "description": "Create and manage thorough implementation specs with discovery interviews, deep research, and phased execution. Commands: /specsmith-new, /specsmith-implement, /specsmith-resume, /specsmith-switch, /specsmith-edit, /specsmith-status, /specsmith-list, /specsmith-show, /specsmith-archive, /specsmith-unarchive, /specsmith-drop.",
-  "version": "1.1.0",
+  "description": "Create and manage thorough implementation specs with discovery interviews, deep research, and phased execution. Full-stack UISpec integration: sync API contracts to frontend, create UI implementation specs, validate conformance. Commands: /specsmith-new, /specsmith-implement, /specsmith-resume, /specsmith-switch, /specsmith-edit, /specsmith-status, /specsmith-list, /specsmith-show, /specsmith-archive, /specsmith-unarchive, /specsmith-drop, /specsmith-uispec-init, /specsmith-uispec-sync, /specsmith-uispec-new, /specsmith-uispec-detect, /specsmith-uispec-validate.",
+  "version": "2.0.0",
   "author": {
     "name": "Gabriel Voicu"
   }

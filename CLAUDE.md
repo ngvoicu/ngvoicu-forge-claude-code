@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is **ngvoicu-forge-claude-code**, a Claude Code plugin marketplace containing six plugins for spec-driven development, deep research, living documentation, surgical code editing, and UI specification workflows. All plugins are markdown-based (commands, skills, assets) with no build system, package manager, or test framework.
+This is **ngvoicu-forge-claude-code**, a Claude Code plugin marketplace containing four plugins for spec-driven development, deep research, living documentation, and surgical code editing. UI specification workflows are integrated into specsmith. All plugins are markdown-based (commands, skills, assets) with no build system, package manager, or test framework.
 
 ## Architecture
 
@@ -12,23 +12,19 @@ This is **ngvoicu-forge-claude-code**, a Claude Code plugin marketplace containi
 
 Each plugin follows a **thin-command-over-thick-skill** pattern:
 
-- `commands/<name>.md` — thin wrappers (~14 lines) that declare allowed tools and invoke a skill action
+- `commands/<name>.md` — thin wrappers (~15 lines) that declare allowed tools and invoke a skill action
 - `skills/<name>/SKILL.md` — thick implementation containing all logic
-- `agents/<name>.md` — specialized subagents spawned via the Task tool for focused work
+- `agents/<name>.md` — specialized subagents spawned via the Task tool for focused work (grimoire, runebook, chisel)
 
-### Six Plugins
+### Four Plugins
 
-**specsmith** — Research-driven implementation specs with discovery interviews, parallel research subagents, and phased execution. Supports one-shot spec creation (`/specsmith-new name: brief`), a quality gate that rejects vague briefs before analysis, and lightweight research mode for simple changes. State lives in `.specsmiths/` as plain markdown committed to git.
+**specsmith** — Research-driven implementation specs with discovery interviews, parallel research subagents, and phased execution. Supports one-shot spec creation (`/specsmith-new name: brief`), a quality gate that rejects vague briefs before analysis, and lightweight research mode for simple changes. Includes full-stack UISpec integration: backend syncs API contracts to `.uispec/` in the frontend project, frontend creates UI implementation specs from `.uispec/` endpoints with a specsmith-like workflow (discovery → research → plan → implement → validate). State lives in `.specsmiths/` as plain markdown committed to git.
 
 **grimoire** — Research suite with 6 specialized agents that auto-dispatches based on your query. Just `/grimoire <query>` — it picks the right agents (docs, best practices, codebase, git history, DB schema, API contracts) automatically. Integrates with specsmith Phase 2 for enhanced research.
 
 **runebook** — Living documentation that tracks how an application works. Maintains structured docs for endpoints, jobs, flows, services, integrations, pages, components, and hooks — covering both backend and frontend. Also generates narrative **system guides** organized by feature domain (authentication, payments, onboarding) that explain how things work end-to-end. Guides are auto-generated from component relationships and kept in sync with code changes, while preserving human-written sections. Always in sync with code changes. State lives in `.runebook/` as plain markdown committed to git.
 
 **chisel** — Fast surgical code editor (haiku model) for renaming, moving, replacing, and small targeted edits. Git-aware, framework-aware, language-agnostic. Automatically updates all references and imports.
-
-**uispec-backend** — Syncs `openapi.yaml` and endpoint specs in `../{{PRJ-frontend}}/uispec/` after backend API changes. Also generates a Suggested Implementation section in each endpoint file with component recommendations, key interactions, and things to watch out for (rate limits, file uploads, nested objects). Backend-owned: `openapi.yaml`, API sections, Suggested Implementation.
-
-**uispec-frontend** — Frontend commands for detecting spec gaps, building UI from specs, and validating UI conformance. Supports optional context via colon syntax (`/uispec-implement endpoint: context`) to guide implementation decisions when updating existing endpoints. Frontend-owned: `design-system.md`, `components.md`, UI Guidelines sections of endpoint files.
 
 ### Key Directories
 
@@ -37,11 +33,10 @@ Each plugin follows a **thin-command-over-thick-skill** pattern:
 - `grimoire/.claude-plugin/plugin.json` — grimoire manifest
 - `runebook/.claude-plugin/plugin.json` — runebook manifest
 - `chisel/.claude-plugin/plugin.json` — chisel manifest
-- `uispec-backend/.claude-plugin/plugin.json` — uispec-backend manifest
-- `uispec-frontend/.claude-plugin/plugin.json` — uispec-frontend manifest
 - `.specsmiths/` — spec state storage (created per-project by specsmith, not in this repo)
+- `.specsmiths/uispec.json` — UISpec config in backend projects (frontend path, last sync date)
+- `.uispec/` — UI specification directory (created in frontend projects by `/specsmith-uispec-init`, not in this repo)
 - `.runebook/` — runebook state storage (created per-project by runebook, not in this repo)
-- `uispec/` — UI specification directory (created in frontend projects, not in this repo)
 
 ### State Management
 
@@ -51,6 +46,13 @@ All state is plain markdown files designed to be committed to git:
 - `.specsmiths/<name>.research.md` — research findings from subagents
 - `.specsmiths/<name>.questions.md` — discovery Q&A log
 - `.specsmiths/active.json` — tracks active spec (`{"active": "<name>", "last_switched": "<ISO date>"}`)
+- `.specsmiths/uispec.json` — UISpec config (`{"frontend_path": "../frontend", "last_synced": "<ISO>"}`)
+- `.specsmiths/<endpoint>-ui.md` — UI implementation spec (created by `/specsmith-uispec-new`)
+- `.specsmiths/<endpoint>-ui.research.md` — UI research findings
+- `.uispec/openapi.yaml` — API contract (backend-owned)
+- `.uispec/endpoints/<endpoint>.md` — per-endpoint spec with API sections + Suggested Implementation + UI Guidelines
+- `.uispec/design-system.md` — design tokens (frontend-owned)
+- `.uispec/components.md` — shared component patterns (Shared Patterns section backend-owned, rest frontend-owned)
 - `.runebook/index.md` — master index with links, tags, dates
 - `.runebook/<type>/<name>.md` — entry with YAML frontmatter (`type`, `updated`, `source_files`, `related`, `tags`). Types: `endpoints/`, `jobs/`, `flows/`, `services/`, `integrations/`, `pages/`, `components/`, `hooks/`
 - `.runebook/guides/<name>.md` — narrative system guides with YAML frontmatter (`type: guide`, `domain`, `covers`, `tags`). Organized by feature domain, not component type.
@@ -72,36 +74,66 @@ All state is plain markdown files designed to be committed to git:
 2. **Research** — adaptive parallel subagents (up to 6 with grimoire, up to 5 with inline fallback); uses grimoire agents when installed, falls back to inline subagents. Lightweight mode (codebase-only) available for simple changes when user requests it.
 3. **Spec creation** — full specification with requirements, architecture, phased steps (What/Where/How/Verify), edge case table, risks, testing strategy, rollback plan
 
-### UISpec Ownership Rules
+### UISpec Integration (in specsmith)
 
-Backend-owned (read-only for frontend): `openapi.yaml`, API sections in endpoint files (Method, Path, Auth, Request, Response), Suggested Implementation section
+UISpec is built into specsmith. Backend projects push API contracts to `.uispec/` in the frontend project. Frontend projects read `.uispec/` and create specsmith specs for UI implementation.
 
-Frontend-owned (read-only for backend): `design-system.md`, `components.md`, UI Guidelines sections in endpoint files
+**Ownership rules:**
+- Backend-owned (read-only for frontend): `openapi.yaml`, API sections in endpoint files (Method, Path, Auth, Request, Response), Suggested Implementation, Related Endpoints, `components.md` Shared Patterns section
+- Frontend-owned (read-only for backend): `design-system.md`, `components.md` (except Shared Patterns), UI Guidelines sections in endpoint files
+- Suggested Implementation is backend-generated but frontend can override in UI Guidelines
 
-Suggested Implementation is backend-generated but frontend can override — it provides component suggestions, key interactions, and watchouts based on endpoint patterns
+### Project Flows
 
-### Specsmith + UISpec Full-Stack Workflow
+**Backend-only projects** (API, microservice, CLI):
+```
+/specsmith-new feature: brief → spec → /specsmith-implement → done
+```
+No UISpec commands needed. Specsmith doesn't nag about syncing.
 
-**New features:** specsmith creates the spec → backend implements API endpoints → `/uispec-sync` pushes API contracts to frontend → `/uispec-implement <endpoint>` builds UI from spec → `/uispec-validate-ui` confirms alignment. Specsmith reminds you to sync at step and phase boundaries when API endpoints change.
+**Full-stack projects:**
+```
+Backend:  /specsmith-new → /specsmith-implement (auto-syncs .uispec/) or /specsmith-uispec-sync
+Frontend: /specsmith-uispec-detect → /specsmith-uispec-new login → full workflow → /specsmith-resume
+```
 
-**Updating existing endpoints:** backend changes → `/uispec-sync` updates spec files → `/uispec-detect` shows gaps → `/uispec-implement <endpoint>: <what changed and how to handle it>` updates UI with context. The colon syntax provides implementation guidance (e.g., `create-user: Added email verification — show inline validation`) so uispec knows the intent behind spec changes, not just the shape diff.
+**Frontend-only projects** (consuming external API):
+```
+Manually create .uispec/ or copy from backend team → /specsmith-uispec-new endpoint
+```
+
+**Updating existing endpoints:**
+```
+Backend changes → /specsmith-uispec-sync → Frontend: /specsmith-uispec-detect → /specsmith-uispec-new endpoint: context
+```
+The colon syntax provides implementation guidance (e.g., `login: added 2FA`) so specsmith knows the intent behind spec changes.
 
 ## Commands
 
-### Specsmith (11 commands)
+### Specsmith — Core (11 commands) [BE+FE]
 ```
-/specsmith-new <name>: <brief>  # one-shot: discovery -> research -> full spec
-/specsmith-new <name>           # name only: asks for brief next
-/specsmith-implement            # start active spec implementation
-/specsmith-resume               # re-read everything, continue active spec
-/specsmith-switch <name>        # save progress, switch active spec
-/specsmith-edit <name>          # revise spec mid-flight
-/specsmith-status               # dashboard of all specs with phase progress
-/specsmith-list                 # interactive list with picker
-/specsmith-show [name]          # display spec without activating
-/specsmith-archive <name>       # shelve completed/paused spec
-/specsmith-unarchive <name>     # restore archived spec
-/specsmith-drop <name>          # delete spec + research + questions
+/specsmith-new <name>: <brief>  [BE+FE]  one-shot: discovery -> research -> full spec
+/specsmith-new <name>           [BE+FE]  name only: asks for brief next
+/specsmith-implement            [BE+FE]  start active spec implementation
+/specsmith-resume               [BE+FE]  re-read everything, continue active spec
+/specsmith-switch <name>        [BE+FE]  save progress, switch active spec
+/specsmith-edit <name>          [BE+FE]  revise spec mid-flight
+/specsmith-status               [BE+FE]  dashboard of all specs with phase progress
+/specsmith-list                 [BE+FE]  interactive list with picker
+/specsmith-show [name]          [BE+FE]  display spec without activating
+/specsmith-archive <name>       [BE+FE]  shelve completed/paused spec
+/specsmith-unarchive <name>     [BE+FE]  restore archived spec
+/specsmith-drop <name>          [BE+FE]  delete spec + research + questions
+```
+
+### Specsmith — UISpec (5 commands)
+```
+/specsmith-uispec-init                          [BE]     initialize .uispec/ in frontend project
+/specsmith-uispec-sync                          [BE]     sync API changes to .uispec/
+/specsmith-uispec-new [endpoint]                [FE]     create UI spec from .uispec/ endpoint
+/specsmith-uispec-new <endpoint>: <context>     [FE]     create UI spec with implementation guidance
+/specsmith-uispec-detect                        [FE]     find gaps between .uispec/ and UI code
+/specsmith-uispec-validate                      [FE]     validate UI against .uispec/ (PASS/FAIL)
 ```
 
 ### Grimoire (1 command, auto-dispatches)
@@ -125,28 +157,14 @@ Suggested Implementation is backend-generated but frontend can override — it p
 /runebook-status            # dashboard with coverage, staleness, and guide health
 ```
 
-### Chisel (1 command, 4 operations)
+### Chisel (1 command, 5 operations)
 ```
 /chisel                                # show available operations
 /chisel rename <old> to <new>          # rename + update all references
 /chisel move <source> to <dest>        # move + update all import paths
 /chisel replace <old> with <new>       # find-and-replace with scope analysis
 /chisel edit <description>             # small targeted code change
-```
-
-### UISpec Backend (3 commands)
-```
-/uispec-init      # initialize uispec/ from existing backend endpoints
-/uispec-sync      # sync after backend API changes
-/uispec-validate  # check spec consistency and coverage
-```
-
-### UISpec Frontend (3 commands)
-```
-/uispec-detect                          # find gaps between specs and UI
-/uispec-implement <endpoint>            # build/update UI from endpoint spec
-/uispec-implement <endpoint>: <context> # build/update with implementation guidance
-/uispec-validate-ui                     # validate UI follows spec (PASS/FAIL)
+/chisel <natural language>             # auto-detect operation
 ```
 
 ## Critical Rules
@@ -181,20 +199,23 @@ Suggested Implementation is backend-generated but frontend can override — it p
 - **Never use sed/awk for find-and-replace** — use `/chisel replace` which handles word boundaries and verification
 - After chisel operations, **update runebook entries** referencing affected files
 
-### UISpec
-- Always **update `openapi.yaml` first** when syncing uispec — it's the API source of truth
+### Specsmith UISpec
+- Always **update `openapi.yaml` first** when syncing — it's the API source of truth
 - **Respect ownership boundaries** — frontend doesn't modify API sections, backend doesn't modify UI sections
-- **Suggested Implementation** — backend generates component suggestions, key interactions, and watchouts during sync. Frontend can override in UI Guidelines.
-- **Context via colon syntax** — `/uispec-implement endpoint: context` provides implementation guidance for updates. The context explains why things changed and how the UI should handle it. Without context, uispec implements spec changes mechanically from the shape diff alone.
+- **Suggested Implementation** — backend generates component suggestions, interactions, state flows, and watchouts during sync. Frontend can override in UI Guidelines.
+- **Cross-endpoint analysis** — during sync, analyze all endpoints together to identify shared patterns and update `components.md`
+- **Context via colon syntax** — `/specsmith-uispec-new endpoint: context` provides implementation guidance. The context explains why things changed and how the UI should handle it.
+- **Auto-sync during implementation** — when `/specsmith-implement` completes a step that touches API endpoints and `.specsmiths/uispec.json` exists, it auto-syncs to `.uispec/`. No manual sync needed during spec implementation.
+- **Never nag backend-only projects** — if `.specsmiths/uispec.json` doesn't exist, skip all UISpec reminders
 
 ### Cross-Plugin Workflows
 - **specsmith + grimoire**: Phase 2 uses grimoire agents for research when available
 - **specsmith + runebook**: Read entries during implementation, update after each step
-- **specsmith + uispec**: After implementing spec steps that change API endpoints, run `/uispec-sync` to update the API contract. Specsmith reminds you at step and phase boundaries.
+- **specsmith + uispec**: Auto-syncs `.uispec/` when implementing API endpoint steps (if frontend configured)
+- **specsmith-uispec-new + grimoire**: Research phase uses grimoire for component library docs, a11y best practices, codebase conventions
 - **chisel + runebook**: After rename/move, update runebook `source_files` references
 - **grimoire + chisel**: Research scope with `/grimoire codebase` before large renames
-- **chisel + uispec**: After renaming endpoints or API handlers, update corresponding uispec endpoint spec files
-- **uispec + runebook**: Keep endpoint documentation consistent across both
+- **chisel + uispec**: After renaming endpoints or API handlers, update corresponding `.uispec/` endpoint spec files
 
 ## Installation
 
@@ -204,9 +225,9 @@ Suggested Implementation is backend-generated but frontend can override — it p
 /plugin install grimoire@ngvoicu-forge-claude-code
 /plugin install runebook@ngvoicu-forge-claude-code
 /plugin install chisel@ngvoicu-forge-claude-code
-/plugin install uispec-backend@ngvoicu-forge-claude-code
-/plugin install uispec-frontend@ngvoicu-forge-claude-code
 ```
+
+UISpec is included in specsmith — no separate installation needed.
 
 ## CLAUDE.md Snippets
 
@@ -214,5 +235,5 @@ Each plugin includes a ready-to-paste CLAUDE.md snippet for target projects:
 - Grimoire: `grimoire/skills/grimoire-awareness/assets/CLAUDE-snippet.md`
 - Runebook: `runebook/skills/runebook-awareness/assets/CLAUDE-snippet.md`
 - Chisel: `chisel/skills/chisel-awareness/assets/CLAUDE-snippet.md`
-- UISpec Backend: `uispec-backend/skills/uispec-backend/assets/CLAUDE-snippet.md`
-- UISpec Frontend: `uispec-frontend/skills/uispec-frontend/assets/CLAUDE-snippet.md`
+- UISpec Backend: `specsmith/skills/specsmith-uispec/assets/CLAUDE-snippet-backend.md`
+- UISpec Frontend: `specsmith/skills/specsmith-uispec/assets/CLAUDE-snippet-frontend.md`

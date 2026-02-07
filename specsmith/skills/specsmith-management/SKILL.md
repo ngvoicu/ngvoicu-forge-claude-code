@@ -1,6 +1,6 @@
 ---
 name: specsmith-management
-description: "Awareness of the .specsmiths/ directory for multi-spec workflows. Triggers on: 'the plan', 'the spec', 'my plans', 'switch to', 'go back to', 'resume', 'continue where we left off', 'what was I working on', 'show my plans', 'where am I', 'actually let's change', 'we also need', 'I realized we should', 'implement the spec', 'let's build this', 'start implementation', 'execute the plan', or when a .specsmiths/ directory exists. Also triggers when the user describes a feature requiring changes to more than 2 files."
+description: "Awareness of the .specsmiths/ directory for multi-spec workflows and .uispec/ for UI specification workflows. Triggers on: 'the plan', 'the spec', 'my plans', 'switch to', 'go back to', 'resume', 'continue where we left off', 'what was I working on', 'show my plans', 'where am I', 'actually let's change', 'we also need', 'I realized we should', 'implement the spec', 'let's build this', 'start implementation', 'execute the plan', 'sync uispec', 'build ui for', 'implement ui', 'check uispec', or when a .specsmiths/ or .uispec/ directory exists. Also triggers when the user describes a feature requiring changes to more than 2 files."
 user-invocable: false
 ---
 
@@ -76,7 +76,24 @@ When the conversation suggests complexity but no spec exists:
 
 Say: "This is getting complex — want me to create a spec to track this properly? `/specsmith-new <suggested-name>`"
 
-**UISpec awareness:**
-When the user is implementing a spec and mentions uispec, API contracts,
-or UI guidelines:
-- Remind: "Run `/uispec-sync` to sync your latest API changes to UISpec."
+## UISpec Awareness
+
+**Backend project** (`.specsmiths/uispec.json` exists):
+- When the user mentions uispec, API contracts, or syncing:
+  - Suggest: "Run `/specsmith-uispec-sync` to sync your latest API changes."
+- When the user is about to create a new endpoint outside of a spec:
+  - Suggest: "Run `/specsmith-uispec-sync` after creating this endpoint to update the frontend's .uispec/."
+- During spec implementation, auto-sync happens automatically — no manual reminder needed.
+
+**Frontend project** (`.uispec/` directory exists):
+- When the user wants to build UI for an API endpoint:
+  - Suggest: "Run `/specsmith-uispec-new <endpoint>` to create a full implementation spec from the API contract."
+- When the user asks what needs implementing:
+  - Suggest: "Run `/specsmith-uispec-detect` to find gaps between specs and UI."
+- When the user asks about API compliance:
+  - Suggest: "Run `/specsmith-uispec-validate` to check UI conformance."
+- When `.uispec/` exists but the user starts building without reading specs:
+  - Remind: "There's a `.uispec/` spec for this endpoint — read it first to ensure the UI matches the API contract."
+
+**No UISpec configured** (no `.specsmiths/uispec.json` and no `.uispec/`):
+- No UISpec-related suggestions. Don't nag about UISpec in backend-only projects.

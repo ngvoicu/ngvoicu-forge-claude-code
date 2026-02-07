@@ -69,6 +69,41 @@ The agent returns a summary of all files modified and what changed in each. Pres
 
 If the agent asked the user a clarifying question (ambiguous match, large scope preview), relay the question and wait for the user's response before continuing.
 
+### Step 4: Post-Operation Hooks
+
+After the chisel agent returns results, check for cross-plugin updates:
+
+**Runebook update** (if runebook is installed):
+- Check if `.runebook/` exists at the project root
+- If yes:
+  - From the agent's results, identify all files that were modified, renamed, or moved
+  - Grep `.runebook/` entry frontmatter for `source_files` matching the OLD paths
+    of any renamed or moved files
+  - For each matching entry:
+    - **Rename/move:** Update `source_files` paths in frontmatter to new locations
+    - **Replace:** Re-read affected source files and update entry body if behavior
+      descriptions reference the replaced text (function names, class names, endpoint paths)
+    - **Edit:** Re-read affected source files and update entry if documented behavior changed
+    - Append a changelog line: `- <date> Updated by chisel <operation>: <summary>`
+  - Update `.runebook/index.md` if any frontmatter metadata changed
+  - If any updated entries are covered by a guide, update the guide's
+    `Where Things Live` section with new file paths
+  - Announce: "Updated runebook: `<type>/<name>` (source paths updated)"
+- If `.runebook/` does NOT exist:
+  - Skip silently
+
+**UISpec update** (if UISpec is configured):
+- Check if `.uispec/` exists (frontend project) OR `.specsmiths/uispec.json` exists (backend project)
+- If yes AND the operation renamed/moved API handler or route files:
+  - For **backend projects**: read uispec.json, find frontend path, check if
+    `.uispec/endpoints/` contains a spec referencing the old endpoint path,
+    update the spec's API section (Method, Path)
+  - For **frontend projects**: check if `.uispec/endpoints/*.md` files reference
+    the old file paths in UI Guidelines and update those references
+  - Announce: "Updated .uispec/ endpoint spec: `<endpoint-name>`"
+- If neither exists:
+  - Skip silently
+
 ---
 
 ## Operation-Specific Guidance

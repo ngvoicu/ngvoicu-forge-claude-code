@@ -155,13 +155,23 @@ Initialize the runebook by scanning the codebase and generating documentation en
    - Flows (multi-component business processes) cannot be fully auto-detected
    - Present any potential flows the scanner found and ask: "The scanner identified these potential flows. Would you like me to create entries for any of them? You can also describe additional business flows."
 
-6. **Generate system guides**
-   - After all per-component entries are created, use the scanner's "Guide-Worthy Domains" output to identify natural feature domains (groups of components that work together — e.g. "authentication" touches login endpoint + auth service + session job + OAuth integration)
-   - Supplement with additional clustering by `tags` and `related` cross-references if the scanner missed any domains
-   - For each domain that spans 3+ components across 2+ types, generate a guide in `guides/<domain-name>.md` using the Guide Template
+6. **Generate system guides (MANDATORY — do not skip this step)**
+
+   **This step MUST execute and produce at least one guide file. Do not jump from step 5 to step 7.**
+
+   Use the following fallback chain to determine which guides to generate:
+
+   1. **Scanner provided Guide-Worthy Domains** → generate one guide per domain in `guides/<domain-name>.md` using the Guide Template
+   2. **Scanner omitted Guide-Worthy Domains but 10+ entries exist** → self-cluster entries by shared `tags` and `related` cross-references to identify domains, then generate one guide per cluster
+   3. **Fewer than 10 entries or no clusters found** → generate a single `guides/how-it-works.md` covering all discovered components as one system
+
+   For every guide generated:
    - Guides are narrative — synthesize the component-level docs into a readable story of how the feature works end-to-end
    - Don't just list components; connect them: explain the flow, the why, the gotchas
-   - If the codebase is small (< 10 entries total), generate a single `guides/how-it-works.md` covering the whole system instead of per-domain guides
+   - Supplement with additional clustering by `tags` and `related` cross-references if the scanner missed any domains
+
+   **Verification:** After guide generation, confirm `guides/` contains at least one `.md` file. If not, generate `guides/how-it-works.md` as a catch-all covering all entries.
+
    - Present generated guides to the user: "I generated these system guides based on the component relationships I found: [list]. Want me to adjust any of them?"
 
 7. **Report results**
@@ -175,7 +185,7 @@ Initialize the runebook by scanning the codebase and generating documentation en
    - Components: 10 created
    - Hooks: 4 created
    - Flows: 0 (awaiting your input)
-   - Guides: 3 generated (authentication, payments, onboarding)
+   - Guides: 3 generated (authentication, payments, onboarding) — MUST be >= 1
    - Skipped: 2 (already existed)
    - TODOs: 3 entries need human context (marked with TODO)
    ```
