@@ -1,5 +1,5 @@
 ---
-description: "Restore an archived spec. Usage: /specsmith-unarchive <name>"
+description: "[BE+FE] Restore an archived spec. Usage: /specsmith-unarchive <name>"
 scope: both
 allowed-tools: Read, Edit, Write, Glob
 ---

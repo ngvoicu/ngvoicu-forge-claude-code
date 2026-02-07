@@ -1,5 +1,5 @@
 ---
-description: "Detect gaps between .uispec/ specs and UI code. Usage: /specsmith-uispec-detect"
+description: "[FE] Detect gaps between .uispec/ specs and UI code. Usage: /specsmith-uispec-detect"
 scope: frontend
 allowed-tools: Read, Glob, Grep, LS
 ---

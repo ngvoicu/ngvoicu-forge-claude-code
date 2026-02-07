@@ -1,5 +1,5 @@
 ---
-description: "Validate UI code against .uispec/ specs with PASS/FAIL checks. Usage: /specsmith-uispec-validate"
+description: "[FE] Validate UI code against .uispec/ specs with PASS/FAIL checks. Usage: /specsmith-uispec-validate"
 scope: frontend
 allowed-tools: Read, Glob, Grep, LS
 ---

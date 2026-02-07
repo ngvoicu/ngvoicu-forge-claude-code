@@ -1,5 +1,5 @@
 ---
-description: "Sync API changes to frontend's .uispec/ directory. Usage: /specsmith-uispec-sync"
+description: "[BE] Sync API changes to frontend's .uispec/ directory. Usage: /specsmith-uispec-sync"
 scope: backend
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, LS
 ---

@@ -1,5 +1,5 @@
 ---
-description: "Start implementation of the active spec. Creates tasks and begins executing. Usage: /specsmith-implement"
+description: "[BE+FE] Start implementation of the active spec. Creates tasks and begins executing. Usage: /specsmith-implement"
 scope: both
 allowed-tools: Read, Edit, Write, Bash, Glob, Grep, LS, TodoRead, TodoWrite, Task, WebSearch, WebFetch, AskUserQuestion
 ---

@@ -1,5 +1,5 @@
 ---
-description: "Resume the active spec from where you left off. Usage: /specsmith-resume"
+description: "[BE+FE] Resume the active spec from where you left off. Usage: /specsmith-resume"
 scope: both
 allowed-tools: Read, Edit, Glob, Grep, TodoRead, TodoWrite, Task
 ---

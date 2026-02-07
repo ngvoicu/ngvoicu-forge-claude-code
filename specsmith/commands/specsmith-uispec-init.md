@@ -1,5 +1,5 @@
 ---
-description: "Initialize .uispec/ in the frontend project with API contracts from this backend. Usage: /specsmith-uispec-init"
+description: "[BE] Initialize .uispec/ in the frontend project with API contracts from this backend. Usage: /specsmith-uispec-init"
 scope: backend
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, LS, AskUserQuestion
 ---

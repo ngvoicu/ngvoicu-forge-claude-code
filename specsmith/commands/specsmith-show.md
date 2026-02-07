@@ -1,5 +1,5 @@
 ---
-description: "Display a spec without activating it. Usage: /specsmith-show [name]"
+description: "[BE+FE] Display a spec without activating it. Usage: /specsmith-show [name]"
 scope: both
 allowed-tools: Read, Glob, Grep
 ---

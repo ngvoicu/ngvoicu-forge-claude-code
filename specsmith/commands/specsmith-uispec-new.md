@@ -1,5 +1,5 @@
 ---
-description: "Create a UI implementation spec from a .uispec/ endpoint. Usage: /specsmith-uispec-new [endpoint][: context]"
+description: "[FE] Create a UI implementation spec from a .uispec/ endpoint. Usage: /specsmith-uispec-new [endpoint][: context]"
 scope: frontend
 allowed-tools: Read, Edit, Write, Bash, Glob, Grep, LS, TodoRead, TodoWrite, Task, WebSearch, WebFetch, AskUserQuestion
 ---

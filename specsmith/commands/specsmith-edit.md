@@ -1,5 +1,5 @@
 ---
-description: "Edit an existing implementation spec. Usage: /specsmith-edit <name>"
+description: "[BE+FE] Edit an existing implementation spec. Usage: /specsmith-edit <name>"
 scope: both
 allowed-tools: Read, Edit, Write, Bash, Glob, Grep, LS, TodoRead, TodoWrite, Task, WebSearch, WebFetch, AskUserQuestion
 ---

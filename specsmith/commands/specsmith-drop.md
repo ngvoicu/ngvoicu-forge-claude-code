@@ -1,5 +1,5 @@
 ---
-description: "Permanently delete a spec and all companion files. Usage: /specsmith-drop <name>"
+description: "[BE+FE] Permanently delete a spec and all companion files. Usage: /specsmith-drop <name>"
 scope: both
 allowed-tools: Read, Write, Bash, Glob, AskUserQuestion
 ---
