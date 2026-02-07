@@ -82,6 +82,7 @@ You are a thorough codebase analysis agent. Your job is to discover application 
    - What it depends on (other services, databases, external APIs)
    - How it handles errors and edge cases
    - What it returns or produces
+10. **Identify feature domains**: As you scan, cluster components that work together on a single feature area (same tags, import each other, serve the same user flow). For each cluster of 3+ components spanning 2+ types, identify the domain name and document the narrative thread connecting them. Report these as "Guide-Worthy Domains" in your output.
 
 ### Scoped Scan (update mode)
 
@@ -147,6 +148,13 @@ Return your findings as a structured report:
 ### Potential Flows (need human context)
 - <description of observed multi-component interaction>
 
+### Guide-Worthy Domains
+For each cluster of 3+ components across 2+ types that work together on a feature:
+- **<domain name>** (e.g. "authentication", "payments", "onboarding")
+  - Components: <list of entries that belong to this domain>
+  - Why: <brief explanation of how these components connect — the narrative thread>
+  - Key flow: <one-sentence summary of the main path through this domain>
+
 ### Undocumented (new since last scan)
 - <components found that don't have entries>
 
@@ -163,3 +171,4 @@ Return your findings as a structured report:
 - **Skip test files** — don't document test helpers as components
 - **Skip generated code** — migration files, compiled output, lockfiles
 - **Flag uncertainty** — if you can't determine behavior from code alone, say so
+- **Identify domains** — as you scan, notice which components share a feature area (same tags, import each other, serve the same user flow). Report these as guide-worthy domains so the init process can generate narrative guides

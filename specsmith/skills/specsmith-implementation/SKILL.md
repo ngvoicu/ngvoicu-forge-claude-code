@@ -41,13 +41,21 @@ Create a new implementation spec. This is a multi-phase process that prioritizes
 
 #### Step 1: Get the User's Explanation
 
-Ask the user to explain the feature they want to implement. Keep it simple:
+Ask the user to explain the feature they want to implement. Give them a nudge toward detail:
 
-"Explain the feature you want to implement."
+"Explain the feature you want to implement. The more detail you give — flow, constraints, edge cases — the fewer follow-up questions I'll need."
 
 Wait for their response. This is their **brief** — it may be a single sentence or multiple paragraphs. Accept whatever they provide without interrupting.
 
 Log the brief to `.specsmiths/<n>.questions.md` under a `## Brief` section.
+
+#### Step 1.5: Brief Quality Gate
+
+Before spending analysis time, check if the brief is too thin to work with. If it's under ~20 words or lacks any concrete detail about desired behavior (e.g. "make a button", "add caching", "fix the thing"), don't proceed to analysis. Instead, prompt the user to expand:
+
+"That's a bit thin for me to analyze — could you expand on what this should do? For example: what triggers it, what the expected behavior is, or what problem it solves."
+
+Only proceed to Step 2 once the brief contains enough substance to meaningfully analyze.
 
 #### Step 2: Think, Then Clarify If Needed
 
@@ -61,7 +69,11 @@ After receiving the brief, **think carefully** about what the user described. An
 
 If the brief already covers enough to spec this — **don't ask unnecessary questions, just proceed to Phase 2.**
 
-If there are genuine gaps, ambiguities, or unstated assumptions, ask 3-5 focused follow-up questions. Don't re-ask things the user already covered. Be like a technical architect — only ask what you actually need to know.
+If there are genuine gaps, ambiguities, or unstated assumptions, signal the transition clearly before asking questions:
+
+"I have a few questions before we move to research."
+
+Then ask 3-5 focused follow-up questions. Don't re-ask things the user already covered. Be like a technical architect — only ask what you actually need to know.
 
 After the user answers, **think again**. If more clarification is still needed, do another round. If not, move on. The goal is the minimum number of rounds needed to understand the problem, not a fixed interview process.
 
@@ -116,7 +128,7 @@ Note: Round sections are only added if clarification was needed. If the brief wa
 You have enough to proceed when:
 - [ ] You can describe the full happy path in 3-5 sentences
 - [ ] You know what "done" looks like (acceptance criteria)
-- [ ] You've identified 5+ edge cases or error scenarios
+- [ ] You've identified relevant edge cases (5+ for complex features, fewer for simple/narrowly-scoped ones)
 - [ ] You know what's explicitly out of scope
 - [ ] Integration points and dependencies are mapped
 
@@ -136,6 +148,8 @@ Only proceed to Phase 2 when:
 ### Phase 2: Deep Research (parallel subagents)
 
 Now that requirements are understood, spawn subagents to research how to build this. Adapt the number and focus of subagents based on what you learned in discovery.
+
+**Lightweight research escape hatch:** If the feature is narrowly scoped (single file, well-understood area, no new dependencies) AND the user explicitly says something like "I know the codebase, skip the deep research" or "keep it light", limit research to a single codebase analysis subagent only — skip web research, best practices, and library docs agents. Note this in `.specsmiths/<n>.research.md` under a `## Research Scope` section as "Lightweight — codebase analysis only (user-requested)."
 
 #### Grimoire Integration (preferred)
 
@@ -629,7 +643,7 @@ If no spec is active, `"active"` is `null`. The current phase and step are track
 ## Critical Behaviors
 
 - **Discovery is mandatory** — never skip the interview. Ask until you truly understand the problem.
-- **Research is mandatory** — never skip subagents. The spec quality depends on what you find.
+- **Research is expected** — always run at least a codebase analysis subagent. Only skip web research subagents if the feature is narrowly scoped AND the user explicitly requests lightweight research.
 - **Never auto-implement** — always wait for explicit go-ahead (use `/specsmith-implement` to start)
 - **Save before switching** — always persist progress before changing context
 - **Re-read everything on resume** — spec + research + questions, restore full context

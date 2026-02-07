@@ -28,8 +28,10 @@ All state lives in `.runebook/` at the project root. Entries are organized by ty
 │   └── <name>.md
 ├── components/
 │   └── <name>.md
-└── hooks/
-    └── <name>.md
+├── hooks/
+│   └── <name>.md
+└── guides/
+    └── <name>.md         # human-readable system guides organized by feature/domain
 ```
 
 Each entry is a markdown file with YAML frontmatter containing metadata (type, dates, source files, related entries, tags) and structured documentation sections specific to the component type.
@@ -68,7 +70,8 @@ Initialize the runebook by scanning the codebase and generating documentation en
      ├── integrations/
      ├── pages/
      ├── components/
-     └── hooks/
+     ├── hooks/
+     └── guides/
      ```
 
 2. **Invoke the `runebook-scanner` agent** for a thorough codebase scan
@@ -139,13 +142,28 @@ Initialize the runebook by scanning the codebase and generating documentation en
    | Name | Returns | Tags | Updated |
    |------|---------|------|---------|
    | [<name>](hooks/<name>.md) | { user, loading, error } | auth, state | 2025-01-15 |
+
+   ## Guides
+
+   | Name | Domain | Covers | Tags | Updated |
+   |------|--------|--------|------|---------|
+   | [<name>](guides/<name>.md) | authentication | 4 endpoints, 2 services | auth, security | 2025-01-15 |
    ```
 
 5. **Ask about flows**
    - Flows (multi-component business processes) cannot be fully auto-detected
    - Present any potential flows the scanner found and ask: "The scanner identified these potential flows. Would you like me to create entries for any of them? You can also describe additional business flows."
 
-6. **Report results**
+6. **Generate system guides**
+   - After all per-component entries are created, use the scanner's "Guide-Worthy Domains" output to identify natural feature domains (groups of components that work together — e.g. "authentication" touches login endpoint + auth service + session job + OAuth integration)
+   - Supplement with additional clustering by `tags` and `related` cross-references if the scanner missed any domains
+   - For each domain that spans 3+ components across 2+ types, generate a guide in `guides/<domain-name>.md` using the Guide Template
+   - Guides are narrative — synthesize the component-level docs into a readable story of how the feature works end-to-end
+   - Don't just list components; connect them: explain the flow, the why, the gotchas
+   - If the codebase is small (< 10 entries total), generate a single `guides/how-it-works.md` covering the whole system instead of per-domain guides
+   - Present generated guides to the user: "I generated these system guides based on the component relationships I found: [list]. Want me to adjust any of them?"
+
+7. **Report results**
    ```
    Runebook initialized:
    - Endpoints: 12 created
@@ -156,6 +174,7 @@ Initialize the runebook by scanning the codebase and generating documentation en
    - Components: 10 created
    - Hooks: 4 created
    - Flows: 0 (awaiting your input)
+   - Guides: 3 generated (authentication, payments, onboarding)
    - Skipped: 2 (already existed)
    - TODOs: 3 entries need human context (marked with TODO)
    ```
@@ -216,12 +235,23 @@ Update runebook entries after code changes.
    - Flagged: jobs/cleanup-temp (source file removed)
    ```
 
+### Guide maintenance during updates
+
+After updating component entries, check if any affected entries are referenced in a guide's `covers` frontmatter:
+
+1. Read guides that reference updated entries (check `covers` field in each `guides/*.md`)
+2. If a guide covers entries that changed materially (new behavior, new dependencies, new error scenarios), update the affected sections of the guide to reflect the new reality
+3. Preserve human-written sections (Gotchas & Tribal Knowledge, Common Tasks) — only update auto-derivable narrative sections (How It Works, Architecture at a Glance, Where Things Live)
+4. Append to the guide's changelog: what changed and why
+5. If an update introduces a new component that doesn't fit any existing guide's domain, don't create a new guide automatically — note it: "New component `<name>` doesn't belong to any existing guide. Run `/runebook-init` to regenerate guides, or create one manually."
+
 ### Update rules
 
 - **Preserve human context**: Never overwrite sections that contain human-written notes, explanations, or annotations not derivable from code
 - **Changelog is append-only**: Never remove or modify existing changelog entries
 - **Cross-references are bidirectional**: When adding `related: services/auth` to an endpoint, also add `related: endpoints/login` to the service
 - **Source files are verified**: Before updating, confirm all `source_files` still exist. Flag missing ones.
+- **Guides stay in sync**: When component entries change, update the guides that cover them
 
 ---
 
@@ -257,6 +287,11 @@ Check the runebook for staleness, missing coverage, broken references, and incon
    - Compare `index.md` entries against actual files in type directories
    - Report: files in index but not on disk, files on disk but not in index
 
+6. **Guide coverage & freshness**
+   - For each guide, verify all entries listed in `covers` still exist
+   - Check if any `covers` entries have been updated more recently than the guide itself — flag the guide as stale
+   - Identify component clusters (3+ components, 2+ types sharing tags) that have no guide — report as "potential guide candidates"
+
 ### Output
 
 ```
@@ -285,10 +320,16 @@ Index consistency:
   - index.md lists jobs/legacy-sync but file not found
   + services/cache-service exists but not in index.md
 
+Guides (3):
+  ✓ guides/authentication — covers 6 entries, up to date
+  ! guides/payments — stale (services/payment-service updated since guide)
+  ? Potential guide candidate: "notifications" (4 components, 3 types, no guide)
+
 Suggestions:
   - Run /runebook-update to fix stale entries
   - Run /runebook-update to add missing entries
   - Manually review broken references
+  - Run /runebook-init to regenerate guides for uncovered domains
 ```
 
 ---
@@ -335,8 +376,9 @@ Runebook Status
   Pages                   6        0        6/6 (100%)
   Components             10        1       10/12 (83%)
   Hooks                   4        0        4/4 (100%)
+  Guides                  3        1           3 (manual)
   ─────────────────────────────────────────────────
-  Total                  49        4       49/54 (91%)
+  Total                  52        5       49/54 (91%)
 
 Recently Updated:
   endpoints/create-user          2025-01-20    auth, users
@@ -953,6 +995,68 @@ function MyComponent() {
 - Initial documentation from codebase scan
 ```
 
+### Guide Template
+
+```markdown
+---
+type: guide
+domain: "<feature/domain area — e.g. authentication, payments, onboarding>"
+updated: <ISO date>
+covers:
+  - endpoints/<name>
+  - services/<name>
+  - integrations/<name>
+  - jobs/<name>
+tags:
+  - <tag>
+---
+
+# How <Domain/Feature> Works
+
+## Overview
+
+<2-3 paragraph narrative explaining what this feature/domain is, why it exists, and how it fits into the broader system. Written for someone new to the codebase who needs to understand the big picture before diving into code.>
+
+## How It Works
+
+<Narrative walkthrough of the main flow in plain language. Not a component reference — a story. "When a user signs up, the system first validates their email via the auth service. If the email is new, it creates an account and triggers a welcome email through SendGrid. Meanwhile, a background job sets up their default workspace...">
+
+### The Happy Path
+
+<Step-by-step narrative of the most common scenario, referencing runebook entries as inline links where helpful but keeping the prose readable.>
+
+### What Can Go Wrong
+
+<Plain-language explanation of key failure scenarios and how the system handles them. Not an exhaustive edge case table — just the important ones a developer should know about.>
+
+## Key Concepts
+
+<Domain-specific concepts, terminology, or mental models that help someone understand this area. For example: "The payment system uses a two-phase approach: authorize first, capture later. This means..."  >
+
+## Architecture at a Glance
+
+<Brief description of which components are involved and how they connect — but keep it narrative, not a component list. A developer reading this should walk away understanding the shape of the system.>
+
+## Where Things Live
+
+| What | Where | Runebook Entry |
+|------|-------|----------------|
+| <logical piece> | `<file path>` | [<entry name>](<relative link>) |
+
+## Common Tasks
+
+<Practical guidance for developers: "If you need to add a new payment method, start by..." or "To debug a failed webhook, check...">
+
+## Gotchas & Tribal Knowledge
+
+<Things that aren't obvious from the code alone. Undocumented constraints, historical decisions, "we tried X but it didn't work because Y", workarounds, known quirks.>
+
+## Changelog
+
+### <ISO date>
+- Initial guide generated from codebase scan
+```
+
 ---
 
 ## Index Management
@@ -981,5 +1085,6 @@ See the template in Action: init, step 4.
 - **Cross-references are bidirectional** — if A references B, B must reference A
 - **Source files are the source of truth** — when code and docs disagree, code wins, docs get updated
 - **Flows need humans** — auto-detection finds components, but business flows require human knowledge
+- **Guides are narrative** — they explain how things work in plain language, not as component lists. Synthesize, don't enumerate. A good guide reads like a walkthrough written by a senior engineer onboarding a new teammate.
 - **Commit `.runebook/` to git** — documentation must survive across sessions
 - **Tags enable discovery** — consistent tagging helps find related components across types

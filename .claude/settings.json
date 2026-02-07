@@ -1,6 +1,0 @@
-{
-  "enabledPlugins": {
-    "plugin-dev@claude-plugins-official": true,
-    "uispec-backend@ngvoicu-forge-claude-code": true
-  }
-}

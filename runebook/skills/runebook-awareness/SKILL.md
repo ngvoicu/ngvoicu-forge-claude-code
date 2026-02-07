@@ -1,6 +1,6 @@
 ---
 name: runebook-awareness
-description: "Assertive awareness of the .runebook/ directory for living documentation. Triggers on: 'how does X work', 'what does this endpoint do', 'what does this service do', 'what does this job do', 'what does this integration do', 'what does this page do', 'what props does X accept', 'what does this hook do', 'check the runebook', 'document this', 'update the docs', or when a .runebook/ directory exists and code changes are made. Automatically reads relevant entries before work and updates them after changes — no prompting."
+description: "Assertive awareness of the .runebook/ directory for living documentation. Triggers on: 'how does X work', 'what does this endpoint do', 'what does this service do', 'what does this job do', 'what does this integration do', 'what does this page do', 'what props does X accept', 'what does this hook do', 'check the runebook', 'document this', 'update the docs', 'explain the X system', 'give me an overview of X', 'walk me through X', 'how do these pieces fit together', or when a .runebook/ directory exists and code changes are made. Automatically reads relevant entries and guides before work and updates them after changes — no prompting."
 ---
 
 # Runebook Awareness
@@ -21,6 +21,13 @@ Activate this skill when the user says anything matching these patterns:
 - "what calls X", "what depends on X"
 - "check the runebook", "look it up in the runebook"
 - When any of these are detected, read the relevant `.runebook/` entry and present it
+
+**Guide queries (high-level "how does it work" questions):**
+- "how does authentication work", "explain the payment system", "walk me through onboarding"
+- "give me an overview of X", "I'm new to this codebase", "help me understand X"
+- "what's the architecture for X", "how do these pieces fit together"
+- When a question is about a feature domain rather than a specific component, check `guides/` first — guides provide the narrative overview, component entries provide the details
+- If a matching guide exists, present it; if not, check if component entries can answer the question directly
 
 **Documentation updates:**
 - "update the docs", "document this", "add this to the runebook"
@@ -46,11 +53,13 @@ When `.runebook/` exists and you're about to implement, modify, or debug code:
 
 2. **Read relevant entries automatically**
    - Read each affected entry from `.runebook/<type>/<name>.md`
+   - Also check if a guide covers this domain — read `guides/*.md` frontmatter to see if any guide's `covers` list includes the affected entries. If so, skim the guide for context about how the component fits into the bigger picture.
    - Surface key details to yourself (do not dump the entire entry to the user unless asked):
      - Current behavior and business logic
      - Dependencies and cross-references
      - Edge cases and error handling
      - Recent changelog entries
+     - How this fits into the broader system (from guides)
    - Use this context to inform your implementation
 
 3. **Note gaps**
@@ -67,8 +76,9 @@ Key behavioral rules:
 - **Identify** which files were created, modified, or deleted and which runebook entries cover them
 - **Update** affected entries — re-read source, update sections, preserve human context, append changelog
 - **Create** entries for new components using the appropriate template
+- **Update guides** if any affected entries are covered by a guide — update the narrative sections to reflect the new reality, preserve human-written sections
 - **Update `index.md`** if new entries were created or metadata changed
-- **Announce briefly**: "Updated runebook: `endpoints/create-user`, `services/auth-service`" — don't dump full entries
+- **Announce briefly**: "Updated runebook: `endpoints/create-user`, `services/auth-service` + guide: `authentication`" — don't dump full entries
 
 ## Documentation Queries
 
